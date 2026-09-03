@@ -1,8 +1,8 @@
-[project]
+[workspace]
 name = "onsite-usable-area-benchmark"
 version = "0.1.0"
 description = "Analysis pipeline for the onsite usable-area benchmarking paper (NLCD vs reV method comparison at U.S. manufacturing parcels)."
-authors = ["Stefan Rose <stefan.rose@pnnl.gov>"]
+authors = ["Stefan Rose <stefan.rose@pnnl.gov>", "Dakota Ramos <dakota.ramos@nlr.gov>"]
 channels = ["conda-forge"]
 platforms = ["osx-arm64", "osx-64", "linux-64"]
 license = "BSD-3-Clause"
@@ -11,37 +11,40 @@ readme = "README.md"
 # ---------------------------------------------------------------------------
 # Python stack (aggregation, reV zonal statistics, GEE extraction ingest,
 # figure generation).
-# Versions listed as loose lower bounds; tighten to exact pins with
-# `pixi update` and commit the resulting pixi.lock for reproducibility.
+#
+# Version bounds are minor-version floors resolved on 2026-09-03; the exact
+# byte-reproducible pins live in `pixi.lock`. To reproduce the environment
+# used to produce the paper's published numbers, use `pixi install --frozen`
+# (installs exactly what is in pixi.lock).
 # ---------------------------------------------------------------------------
 [dependencies]
-python = ">=3.11"
-numpy = "*"
-pandas = "*"
-pyarrow = "*"          # parquet I/O for intermediate/*.parquet
-geopandas = "*"
-shapely = "*"
-fiona = "*"
-pyproj = "*"
-rasterio = "*"
-rasterstats = "*"      # zonal_stats for reV rasters (Python side)
-matplotlib = "*"
-tomli = "*"            # config.toml parsing (stdlib in 3.11+ but explicit)
-earthengine-api = "*"  # GEE Python client (used only if re-running the NLCD extraction)
+python           = ">=3.14,<3.15"
+numpy            = ">=2.5"
+pandas           = ">=3.0"
+pyarrow          = ">=25.0"
+geopandas        = ">=1.1"
+shapely          = ">=2.1"
+fiona            = ">=1.10"
+pyproj           = ">=3.7"
+rasterio         = ">=1.5"
+rasterstats      = ">=0.21"
+matplotlib-base  = ">=3.11"
+tomli            = ">=2.4"      # config.toml parser (stdlib in 3.11+; explicit for older platforms)
+earthengine-api  = ">=1.7"      # GEE Python client (used only when re-running the NLCD extraction)
 
 # ---------------------------------------------------------------------------
 # R stack (NLCD wind binary exclusions, airport-buffer sensitivity,
 # parcel-area-floor sensitivity, NWI/slope flagging).
 # ---------------------------------------------------------------------------
-r-base = ">=4.3"
-r-terra = "*"
-r-sf = "*"
-r-exactextractr = "*"
-r-dplyr = "*"
-r-tidyr = "*"
-r-readr = "*"
-r-purrr = "*"
-r-tibble = "*"
+r-base           = ">=4.5,<4.6"
+r-terra          = ">=1.9"
+r-sf             = ">=1.1"
+r-exactextractr  = ">=0.10"
+r-dplyr          = ">=1.2"
+r-tidyr          = ">=1.3"
+r-readr          = ">=2.2"
+r-purrr          = ">=1.2"
+r-tibble         = ">=3.3"
 
 [tasks]
 # Convenience task aliases. Users can override paths in config.toml.

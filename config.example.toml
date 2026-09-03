@@ -3,62 +3,121 @@
 #
 # Copy this file to `config.toml` and edit the values below to point at your
 # local copies of the input data. See docs/DATA_SOURCES.md for where to obtain
-# each dataset.
+# each dataset. `config.toml` is gitignored so your local paths never enter
+# version control.
 #
-# `config.toml` is gitignored so your local paths never enter version control.
+# CURRENT STATUS (2026-09-03): the pipeline scripts still contain hard-coded
+# BASE = Path(...) declarations at the top of each file. Editing those
+# directly is currently required in addition to setting values here. A
+# future refactor will route all path resolution through this file via a
+# `scripts/_config.py` helper.
 #
-# NOTE: at present the pipeline scripts still contain hard-coded `BASE = ...`
-# lines at the top of each file. Editing those directly is currently required
-# in addition to setting values here. A future refactor will route all path
-# resolution through this config file.
+# TOML has no native variable interpolation. Values below marked
+# "relative to paths.base" must be joined with paths.base by the consuming
+# script; absolute paths are used verbatim.
 # -----------------------------------------------------------------------------
 
 [paths]
-# Root of your local data directory. Every other path below is resolved
-# relative to this root by default.
-base = "/path/to/your/local/data/root"
+# Root of the local data directory. All "relative to paths.base" values
+# below are joined against this root.
+#
+# On the original author's system this is:
+base = "/Users/rose501/Library/CloudStorage/OneDrive-PNNL/Desktop/IEDO"
 
-# Working directory where per-parcel intermediates (parquet, gpkg) are written.
+# Working directory for per-parcel intermediates (parquet, gpkg). Defaults
+# to the intermediate/ directory inside the analysis repo.
 intermediate = "./intermediate"
 
-# Output directory where aggregate CSVs and summary tables are written.
+# Output directory for aggregate CSVs and summary tables. Defaults to the
+# outputs/ directory inside the analysis repo.
 outputs = "./outputs"
 
-# Directory containing the figures folder written to by build_fig3.py
+# Directory for figure PDFs/PNGs written by build_fig3.py and future
+# figure-generation scripts.
 figures = "./figures"
 
+# -----------------------------------------------------------------------------
+# Parcel universe
+# -----------------------------------------------------------------------------
+
 [inputs.parcels]
-# M-FIND parcel universe (v1.1, https://doi.org/10.5281/zenodo.21827821)
-mfind_zenodo = "${paths.base}/M-FIND/mfind_v1_1.gpkg"
+# Source parcel fabric (proprietary; derived from LightBox + Land Records).
+# On the author's system this points at the M-FIND-derived working file.
+# Public users should obtain M-FIND v1.1 from Zenodo:
+#   https://doi.org/10.5281/zenodo.21827821
+# and set this to their local M-FIND geometry file.
+#
+# Relative to paths.base:
+source_gpkg = "Data/Site Lists/New Site List Effort/Parcel Match Outputs/geocoded_matches/joined_output/final_filtering/Working Site Lists/matched_collapsed_filtered.gpkg"
+
+# Facility-level joined site list (MECS-scaled), used by 01_build_parcel_universe.py
+# for the NAICS-based filtering step. Relative to paths.base:
+facility_csv = "Data/Site Lists/Sites MECS Scaled/aggregated_facility_level_site_list_2026_04_23.csv"
+
+# Working parcel universe (305,123 CONUS parcels, EPSG:5070), produced by
+# scripts/01_build_parcel_universe.py and consumed by every downstream
+# script. Relative to paths.base:
+working_gpkg = "Scripts/applied_energy_paper/intermediate/parcels_conus_2026_04_23.gpkg"
+
+# -----------------------------------------------------------------------------
+# reV composite exclusion rasters (NLR)
+# -----------------------------------------------------------------------------
 
 [inputs.rev_solar]
-# NLR reV composite exclusion rasters for solar (three siting scenarios)
-open      = "${paths.base}/reV_Exclusions/composite_exclusions_open.tif"
-reference = "${paths.base}/reV_Exclusions/composite_exclusions_reference.tif"
-limited   = "${paths.base}/reV_Exclusions/composite_exclusions_limited.tif"
-# revPJ: parcel-fabric variant (solar only)
-parcel_joined = "${paths.base}/reV_Exclusions/composite_exclusions_pj.tif"
+# All paths relative to paths.base.
+open      = "Data/reV Exclusions/composite_exclusions_open.tif"
+reference = "Data/reV Exclusions/composite_exclusions_reference.tif"
+limited   = "Data/reV Exclusions/composite_exclusions_limited.tif"
+# revPJ variant (parcel-fabric joined; solar only, diagnostic):
+parcel_joined = "Data/reV Exclusions/conus_percent_inclusion_all_parcels.tif"
 
 [inputs.rev_wind]
-open      = "${paths.base}/reV_Exclusions/composite_exclusions_wind_open.tif"
-reference = "${paths.base}/reV_Exclusions/composite_exclusions_wind_reference.tif"
-limited   = "${paths.base}/reV_Exclusions/composite_exclusions_wind_limited.tif"
+# 115 m hub height, 170 m rotor diameter. All relative to paths.base.
+open      = "Data/reV Exclusions/Wind/lbw_open_115hh_170rd.tif"
+reference = "Data/reV Exclusions/Wind/lbw_reference_115hh_170rd.tif"
+limited   = "Data/reV Exclusions/Wind/lbw_limited_115hh_170rd.tif"
+
+# -----------------------------------------------------------------------------
+# NLCD 2021 (via Google Earth Engine)
+# -----------------------------------------------------------------------------
 
 [inputs.nlcd]
-# Per-parcel NLCD 2021 class-area CSVs, extracted in Google Earth Engine.
-# Expects 17 state-batch files (see scripts/04 header for schema).
-gee_extract_dir = "${paths.base}/LC_Output/output_4_15_26"
+# Directory containing 17 state-batch CSVs from a GEE reduceRegions
+# extraction. Expected filename pattern:
+#   2021_NLCD_parcels_area_m2_*.csv
+# Relative to paths.base:
+gee_extract_dir = "Data/LC_Output/output_4_15_26"
+
+# -----------------------------------------------------------------------------
+# Wind binary exclusion layers
+# -----------------------------------------------------------------------------
 
 [inputs.wind_binary]
-# Ancillary layers for the NLCD wind binary exclusion set (5-layer and 7-layer).
-airports_hifld    = "${paths.base}/HIFLD/Public_Use_Airports.gpkg"
-dod_airspace      = "${paths.base}/HIFLD/Special_Use_Airspace.gpkg"
-critical_habitat  = "${paths.base}/USFWS/Critical_Habitat.gpkg"
-urban_areas       = "${paths.base}/Census/Urban_Areas_2020.gpkg"
-# NWI and slope flags are produced by scripts/data_download/ helpers:
-nwi_flags         = "${paths.intermediate}/wind_flags/flag_nwi.csv"
-slope_flags       = "${paths.intermediate}/wind_flags/flag_slope_gt25.csv"
+# All shapefiles relative to paths.base.
+airports_hifld    = "Data/wind_exclusions/Airports/Airports.shp"
+dod_airspace      = "Data/wind_exclusions/FAA_SUA/Special_Use_Airspace.shp"
+critical_habitat  = "Data/wind_exclusions/Critical_Hab_POLY/crithab_poly.shp"
+urban_areas       = "Data/wind_exclusions/Urban_Areas/Urban_Areas.shp"
+
+# NWI wetlands and slope flags are produced by scripts in
+# scripts/data_download/ and cached as per-parcel flag CSVs.
+# Relative to paths.base:
+nwi_flags   = "Scripts/applied_energy_paper/intermediate/wind_flags/flag_nwi.csv"
+slope_flags = "Scripts/applied_energy_paper/intermediate/wind_flags/flag_slope_gt25.csv"
+
+# -----------------------------------------------------------------------------
+# Projection
+# -----------------------------------------------------------------------------
 
 [projection]
 # All spatial operations occur in this equal-area projection.
 crs = "EPSG:5070"
+
+# -----------------------------------------------------------------------------
+# Wind turbine spec (recorded for provenance)
+# -----------------------------------------------------------------------------
+
+[wind_spec]
+# The reV wind rasters listed under [inputs.rev_wind] correspond to this spec.
+hub_height_m       = 115
+rotor_diameter_m   = 170
