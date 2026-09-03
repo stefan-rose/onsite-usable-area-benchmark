@@ -1,0 +1,93 @@
+# Onsite Usable Area Benchmark
+
+Analysis code and figure-generation scripts for:
+
+> **Sizing up on-site industrial energy: a parcel-level comparison of usable-area methods.**
+> Rose, S., Ramos, D. (2026). *Applied Energy* (under review).
+> Paper DOI: *forthcoming*.
+
+This repository contains the analysis pipeline that produces every quantitative result, table, and figure in the paper. It compares two parcel-level usable-area estimators for onsite generation:
+
+- **NLCD land-cover-proportion method** — weights each parcel's 30 m NLCD 2021 class areas by technology-specific availability percentages.
+- **reV composite exclusion method** — applies coverage-fraction-weighted zonal statistics to three 90 m NLR reV composite exclusion rasters (Open, Reference, Limited) plus a fourth parcel-fabric variant (revPJ).
+
+Both methods run over an identical 305,123-parcel CONUS manufacturing universe.
+
+## Quickstart
+
+```bash
+# 1. Clone
+git clone https://github.com/stefan-rose/onsite-usable-area-benchmark.git
+cd onsite-usable-area-benchmark
+
+# 2. Set up the environment (pixi manages both Python and R packages)
+pixi install
+
+# 3. Configure local paths (input data locations)
+cp config.example.toml config.toml
+# then edit config.toml to point at your local copies of the input data
+# (see docs/DATA_SOURCES.md for where to obtain each dataset)
+
+# 4. Run the pipeline (see docs/PIPELINE.md for the full script order)
+pixi run python scripts/01_build_parcel_universe.py
+pixi run python scripts/02_rev_solar_composite_scenarios.py
+# ...etc.
+```
+
+## Repository layout
+
+```
+.
+├── LICENSE                          BSD-3-Clause
+├── README.md                        This file
+├── CITATION.cff                     Machine-readable citation
+├── pixi.toml                        Python + R environment specification
+├── config.example.toml              Template for local path configuration
+├── docs/
+│   ├── PIPELINE.md                  Script run order + expected outputs
+│   ├── DATA_SOURCES.md              Every input dataset with DOI/URL
+│   └── FIGURE_TABLE_MAP.md          Manuscript figure/table → script mapping
+├── scripts/                         12 numbered pipeline scripts + fig-gen
+│   ├── data_download/               NWI + slope tile download & flagging helpers
+│   └── validation/                  Cross-method validation scripts
+├── outputs/                         Aggregate CSVs (not committed; reproduced locally)
+└── intermediate/                    Per-parcel tables (not committed; reproduced locally)
+```
+
+## Input data
+
+Underlying data are **not redistributed in this repository**. See [`docs/DATA_SOURCES.md`](docs/DATA_SOURCES.md) for provenance and access instructions. In brief:
+
+- **Parcel geometries** — the 305,123-parcel CONUS manufacturing universe is a derived product of proprietary parcel fabrics (LightBox, Land Records). The **M-FIND dataset** (Zenodo DOI [10.5281/zenodo.21827821](https://doi.org/10.5281/zenodo.21827821), v1.1) is the reproducibility anchor and defines the parcel identifiers used throughout.
+- **reV composite exclusion rasters** — released by NLR; see DATA_SOURCES.md for the current supply-curve release.
+- **NLCD 2021** — public, U.S. Geological Survey / MRLC.
+- **NWI wetlands, slope (SRTM/3DEP), airport buffers, DoD restricted airspace, USFWS Critical Habitat, urban areas** — all public federal or state datasets; sources listed individually.
+
+## Path configuration
+
+Every script currently reads inputs from a `BASE` path anchored on the original author's local filesystem (see `scripts/*.py` and `scripts/*.R` headers). Users must either:
+
+1. Copy `config.example.toml` to `config.toml` and edit it, then update each script's `BASE` line to load from the config (see the TODO note in `docs/PIPELINE.md`), **or**
+2. Directly edit the `BASE = ...` line at the top of each script to point at their local data root.
+
+A future refactor will move all path resolution into a single `scripts/_config.py` helper. Pull requests welcome.
+
+## Reproducibility notes
+
+- **Environment.** Library versions are pinned via `pixi.toml`. Regenerating the environment on a fresh machine should produce byte-identical numeric outputs from the same inputs.
+- **NLCD class-area extraction** is performed in Google Earth Engine (see script 04 header). The GEE reduceRegions call uses fractional-coverage cell assignment; results are deterministic for a fixed asset ID.
+- **Random seeds** — no stochastic components in the pipeline; all operations are deterministic given fixed inputs.
+- **Spatial projection** — all spatial operations occur in EPSG:5070 (NAD83 / CONUS Albers Equal Area).
+- **Wall-clock cost.** A full pipeline rebuild on a workstation with 32 GB RAM takes approximately 6–10 hours dominated by raster zonal statistics on the 305k-parcel universe.
+
+## Citation
+
+If you use this code or its outputs, please cite both the paper and this repository. See `CITATION.cff`.
+
+## License
+
+BSD 3-Clause License. See `LICENSE`.
+
+## Contact
+
+Stefan Rose — Pacific Northwest National Laboratory — stefan.rose@pnnl.gov

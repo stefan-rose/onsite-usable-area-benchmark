@@ -1,0 +1,43 @@
+# macOS
+.DS_Store
+._*
+
+# Editor / assistant metadata
+.claude/
+.vscode/
+.idea/
+*.swp
+*~
+
+# Local configuration (paths point at user's data root)
+config.toml
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.ipynb_checkpoints/
+.venv/
+venv/
+
+# pixi environment (managed lock file is tracked; local env dir is not)
+.pixi/
+
+# R
+.Rhistory
+.Rapp.history
+.RData
+.Ruserdata
+.Rproj.user/
+
+# Pipeline outputs (reproduced locally; not committed)
+outputs/**
+!outputs/README.md
+!outputs/.gitkeep
+intermediate/**
+!intermediate/README.md
+!intermediate/.gitkeep
+
+# Logs
+*.log
+run_log*.txt

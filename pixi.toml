@@ -1,0 +1,60 @@
+[project]
+name = "onsite-usable-area-benchmark"
+version = "0.1.0"
+description = "Analysis pipeline for the onsite usable-area benchmarking paper (NLCD vs reV method comparison at U.S. manufacturing parcels)."
+authors = ["Stefan Rose <stefan.rose@pnnl.gov>"]
+channels = ["conda-forge"]
+platforms = ["osx-arm64", "osx-64", "linux-64"]
+license = "BSD-3-Clause"
+readme = "README.md"
+
+# ---------------------------------------------------------------------------
+# Python stack (aggregation, reV zonal statistics, GEE extraction ingest,
+# figure generation).
+# Versions listed as loose lower bounds; tighten to exact pins with
+# `pixi update` and commit the resulting pixi.lock for reproducibility.
+# ---------------------------------------------------------------------------
+[dependencies]
+python = ">=3.11"
+numpy = "*"
+pandas = "*"
+pyarrow = "*"          # parquet I/O for intermediate/*.parquet
+geopandas = "*"
+shapely = "*"
+fiona = "*"
+pyproj = "*"
+rasterio = "*"
+rasterstats = "*"      # zonal_stats for reV rasters (Python side)
+matplotlib = "*"
+tomli = "*"            # config.toml parsing (stdlib in 3.11+ but explicit)
+earthengine-api = "*"  # GEE Python client (used only if re-running the NLCD extraction)
+
+# ---------------------------------------------------------------------------
+# R stack (NLCD wind binary exclusions, airport-buffer sensitivity,
+# parcel-area-floor sensitivity, NWI/slope flagging).
+# ---------------------------------------------------------------------------
+r-base = ">=4.3"
+r-terra = "*"
+r-sf = "*"
+r-exactextractr = "*"
+r-dplyr = "*"
+r-tidyr = "*"
+r-readr = "*"
+r-purrr = "*"
+r-tibble = "*"
+
+[tasks]
+# Convenience task aliases. Users can override paths in config.toml.
+sanity-check     = "python scripts/00_sanity_check_parcel_universe.py"
+build-universe   = "python scripts/01_build_parcel_universe.py"
+rev-solar        = "python scripts/02_rev_solar_composite_scenarios.py"
+rev-solar-pj     = "python scripts/03_rev_solar_parcel_joined.py"
+nlcd-solar       = "python scripts/04_nlcd_full_population_solar.py"
+rev-wind         = "python scripts/05_rev_wind_composite_scenarios.py"
+forest-sens      = "python scripts/06_forest_sensitivity_solar.py"
+nlcd-wind-pct    = "python scripts/07_nlcd_wind_percentage_only.py"
+nlcd-wind-5layer = "Rscript scripts/08_nlcd_wind_binary_exclusions.R"
+airport-sens     = "Rscript scripts/09_airport_buffer_sensitivity.R"
+nlcd-wind-7layer = "Rscript scripts/10_rebuild_headline_3km_and_add_slope_nwi.R"
+floor-sens       = "Rscript scripts/11_parcel_area_floor_sensitivity.R"
+fig3             = "python scripts/build_fig3.py"

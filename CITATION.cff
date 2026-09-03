@@ -1,0 +1,51 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite both the associated paper and this repository."
+title: "Onsite Usable Area Benchmark"
+abstract: >-
+  Analysis pipeline and figure-generation scripts for the paper "Sizing up
+  on-site industrial energy: a parcel-level comparison of usable-area methods."
+  Benchmarks two parcel-level usable-area estimators — the NLCD
+  land-cover-proportion method and the reV composite exclusion method — for
+  ground-mount solar and land-based wind across 305,123 U.S. manufacturing
+  parcels.
+type: software
+authors:
+  - family-names: Rose
+    given-names: Stefan
+    orcid: "https://orcid.org/0009-0007-3707-9786"
+    affiliation: Pacific Northwest National Laboratory
+    email: stefan.rose@pnnl.gov
+  - family-names: Ramos
+    given-names: Dakota
+    affiliation: National Laboratory of the Rockies
+    email: dakota.ramos@nlr.gov
+license: BSD-3-Clause
+repository-code: "https://github.com/stefan-rose/onsite-usable-area-benchmark"
+version: 0.1.0
+date-released: 2026-09-03
+keywords:
+  - renewable energy
+  - solar photovoltaics
+  - land-based wind
+  - onsite generation
+  - technical potential
+  - land use
+  - parcels
+  - manufacturing
+  - NLCD
+  - reV
+
+preferred-citation:
+  type: article
+  title: "Sizing up on-site industrial energy: a parcel-level comparison of usable-area methods"
+  authors:
+    - family-names: Rose
+      given-names: Stefan
+      orcid: "https://orcid.org/0009-0007-3707-9786"
+      affiliation: Pacific Northwest National Laboratory
+    - family-names: Ramos
+      given-names: Dakota
+      affiliation: National Laboratory of the Rockies
+  journal: "Applied Energy"
+  year: 2026
+  # DOI to be added upon publication.

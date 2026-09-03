@@ -1,0 +1,64 @@
+# -----------------------------------------------------------------------------
+# Local path configuration for onsite-usable-area-benchmark
+#
+# Copy this file to `config.toml` and edit the values below to point at your
+# local copies of the input data. See docs/DATA_SOURCES.md for where to obtain
+# each dataset.
+#
+# `config.toml` is gitignored so your local paths never enter version control.
+#
+# NOTE: at present the pipeline scripts still contain hard-coded `BASE = ...`
+# lines at the top of each file. Editing those directly is currently required
+# in addition to setting values here. A future refactor will route all path
+# resolution through this config file.
+# -----------------------------------------------------------------------------
+
+[paths]
+# Root of your local data directory. Every other path below is resolved
+# relative to this root by default.
+base = "/path/to/your/local/data/root"
+
+# Working directory where per-parcel intermediates (parquet, gpkg) are written.
+intermediate = "./intermediate"
+
+# Output directory where aggregate CSVs and summary tables are written.
+outputs = "./outputs"
+
+# Directory containing the figures folder written to by build_fig3.py
+figures = "./figures"
+
+[inputs.parcels]
+# M-FIND parcel universe (v1.1, https://doi.org/10.5281/zenodo.21827821)
+mfind_zenodo = "${paths.base}/M-FIND/mfind_v1_1.gpkg"
+
+[inputs.rev_solar]
+# NLR reV composite exclusion rasters for solar (three siting scenarios)
+open      = "${paths.base}/reV_Exclusions/composite_exclusions_open.tif"
+reference = "${paths.base}/reV_Exclusions/composite_exclusions_reference.tif"
+limited   = "${paths.base}/reV_Exclusions/composite_exclusions_limited.tif"
+# revPJ: parcel-fabric variant (solar only)
+parcel_joined = "${paths.base}/reV_Exclusions/composite_exclusions_pj.tif"
+
+[inputs.rev_wind]
+open      = "${paths.base}/reV_Exclusions/composite_exclusions_wind_open.tif"
+reference = "${paths.base}/reV_Exclusions/composite_exclusions_wind_reference.tif"
+limited   = "${paths.base}/reV_Exclusions/composite_exclusions_wind_limited.tif"
+
+[inputs.nlcd]
+# Per-parcel NLCD 2021 class-area CSVs, extracted in Google Earth Engine.
+# Expects 17 state-batch files (see scripts/04 header for schema).
+gee_extract_dir = "${paths.base}/LC_Output/output_4_15_26"
+
+[inputs.wind_binary]
+# Ancillary layers for the NLCD wind binary exclusion set (5-layer and 7-layer).
+airports_hifld    = "${paths.base}/HIFLD/Public_Use_Airports.gpkg"
+dod_airspace      = "${paths.base}/HIFLD/Special_Use_Airspace.gpkg"
+critical_habitat  = "${paths.base}/USFWS/Critical_Habitat.gpkg"
+urban_areas       = "${paths.base}/Census/Urban_Areas_2020.gpkg"
+# NWI and slope flags are produced by scripts/data_download/ helpers:
+nwi_flags         = "${paths.intermediate}/wind_flags/flag_nwi.csv"
+slope_flags       = "${paths.intermediate}/wind_flags/flag_slope_gt25.csv"
+
+[projection]
+# All spatial operations occur in this equal-area projection.
+crs = "EPSG:5070"
