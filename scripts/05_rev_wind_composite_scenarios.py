@@ -54,7 +54,11 @@ sys.stdout.reconfigure(line_buffering=True)
 
 # ─── Paths ──────────────────────────────────────────────────────────────────
 
-BASE         = Path("/Users/rose501/Library/CloudStorage/OneDrive-PNNL/Desktop/IEDO")
+# Path configuration: load BASE and named input paths from config.toml at
+# the repo root (falls back to config.example.toml if config.toml is absent).
+import sys as _sys
+_sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _config import BASE  # noqa: E402
 PARCEL_GPKG  = BASE / "Scripts/applied_energy_paper/intermediate/parcels_conus_2026_04_23.gpkg"
 REV_DIR      = BASE / "Data/reV Exclusions/Wind"
 OUT_BASE     = BASE / "Scripts/method_comparison/outputs"

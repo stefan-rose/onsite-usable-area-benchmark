@@ -65,12 +65,15 @@ Underlying data are **not redistributed in this repository**. See [`docs/DATA_SO
 
 ## Path configuration
 
-Every script currently reads inputs from a `BASE` path anchored on the original author's local filesystem (see `scripts/*.py` and `scripts/*.R` headers). Users must either:
+All pipeline scripts load their input paths from a single `config.toml` at the repo root, via the shared helpers `scripts/_config.py` (Python) and `scripts/_config.R` (R). To run on a new machine:
 
-1. Copy `config.example.toml` to `config.toml` and edit it, then update each script's `BASE` line to load from the config (see the TODO note in `docs/PIPELINE.md`), **or**
-2. Directly edit the `BASE = ...` line at the top of each script to point at their local data root.
+1. Copy `config.example.toml` to `config.toml`.
+2. Edit `[paths].base` to point at your local data root.
+3. Adjust any input paths under `[inputs.*]` if your data layout differs from the author's default.
 
-A future refactor will move all path resolution into a single `scripts/_config.py` helper. Pull requests welcome.
+`config.toml` is gitignored so your local paths never enter version control. If `config.toml` is absent, the helpers fall back to `config.example.toml` (which contains the original author's paths).
+
+**Current caveat.** Scripts still write their outputs to `<base>/Scripts/method_comparison/outputs/...` rather than to the repo-local `outputs/` directory. This preserves the original inter-script dependency layout (each script reads the previous script's outputs from that same rooted location). Overriding `paths.base` propagates to all output locations consistently. A future refactor will migrate the output tree into the repo (`OUTPUTS` and `INTERMEDIATE` are already exposed in `_config` for this purpose but not yet consumed by the pipeline scripts).
 
 ## Reproducibility notes
 

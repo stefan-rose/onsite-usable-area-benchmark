@@ -65,7 +65,15 @@ suppressPackageStartupMessages({
   library(purrr)
 })
 
-REPO <- "/Users/rose501/Library/CloudStorage/OneDrive-PNNL/Desktop/IEDO"
+# Path configuration: load BASE and named input paths from config.toml at
+# the repo root (falls back to config.example.toml if config.toml is absent).
+.script_dir <- if (length(grep("^--file=", commandArgs(trailingOnly = FALSE))) > 0) {
+  dirname(normalizePath(sub("^--file=", "", grep("^--file=", commandArgs(trailingOnly = FALSE), value = TRUE)[1])))
+} else if (!is.null(sys.frame(1)$ofile)) {
+  dirname(normalizePath(sys.frame(1)$ofile))
+} else { file.path(getwd(), "scripts") }
+source(file.path(.script_dir, "_config.R"))
+REPO <- BASE  # backwards-compat alias used by this script
 
 ARCHIVE_5KM_CSV <- file.path(REPO,
   "Scripts/applied_energy_paper/outputs/nlcd_wind/_archive_5km_buffer_2026_04_29/nlcd_wind_percentage_plus_binary.csv")

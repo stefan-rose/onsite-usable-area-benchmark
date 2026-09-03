@@ -39,7 +39,11 @@ import geopandas as gpd
 
 sys.stdout.reconfigure(line_buffering=True)
 
-BASE       = Path("/Users/rose501/Library/CloudStorage/OneDrive-PNNL/Desktop/IEDO")
+# Path configuration: load BASE and named input paths from config.toml at
+# the repo root (falls back to config.example.toml if config.toml is absent).
+import sys as _sys
+_sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _config import BASE  # noqa: E402
 NEW_CSV    = BASE / "Data/Site Lists/Sites MECS Scaled/aggregated_facility_level_site_list_2026_04_23.csv"
 PARCEL_GPKG= BASE / "Data/Site Lists/New Site List Effort/Parcel Match Outputs/geocoded_matches/joined_output/final_filtering/Working Site Lists/matched_collapsed_filtered.gpkg"
 

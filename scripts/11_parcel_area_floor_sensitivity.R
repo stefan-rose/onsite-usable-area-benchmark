@@ -33,7 +33,19 @@ suppressPackageStartupMessages({
   library(readr)
 })
 
-base_dir <- "/Users/rose501/Library/CloudStorage/OneDrive-PNNL/Desktop/IEDO/Scripts/applied_energy_paper"
+# Path configuration: load BASE and named input paths from config.toml at
+# the repo root (falls back to config.example.toml if config.toml is absent).
+.script_dir <- if (length(grep("^--file=", commandArgs(trailingOnly = FALSE))) > 0) {
+  dirname(normalizePath(sub("^--file=", "", grep("^--file=", commandArgs(trailingOnly = FALSE), value = TRUE)[1])))
+} else if (!is.null(sys.frame(1)$ofile)) {
+  dirname(normalizePath(sys.frame(1)$ofile))
+} else { file.path(getwd(), "scripts") }
+source(file.path(.script_dir, "_config.R"))
+REPO <- BASE  # backwards-compat alias used by this script
+# base_dir originally pointed at IEDO/Scripts/applied_energy_paper (the
+# canonical author working copy). Preserved here for backward compatibility;
+# override via config.toml if the outputs directory lives elsewhere.
+base_dir <- file.path(BASE, "Scripts/applied_energy_paper")
 in_csv   <- file.path(base_dir, "outputs/nlcd_wind/nlcd_wind_percentage_plus_binary.csv")
 out_dir  <- file.path(base_dir, "outputs/nlcd_wind/parcel_area_floor_sensitivity")
 dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)

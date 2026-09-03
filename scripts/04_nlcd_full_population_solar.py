@@ -52,7 +52,11 @@ sys.stdout.reconfigure(line_buffering=True)
 
 # ─── Paths ──────────────────────────────────────────────────────────────────
 
-BASE         = Path("/Users/rose501/Library/CloudStorage/OneDrive-PNNL/Desktop/IEDO")
+# Path configuration: load BASE and named input paths from config.toml at
+# the repo root (falls back to config.example.toml if config.toml is absent).
+import sys as _sys
+_sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _config import BASE  # noqa: E402
 GEE_DIR      = BASE / "Data/LC_Output/output_4_15_26"
 PARCEL_GPKG  = BASE / "Scripts/applied_energy_paper/intermediate/parcels_conus_2026_04_23.gpkg"
 OUT_DIR      = BASE / "Scripts/method_comparison/outputs/full_run_nlcd_2026_04_23"

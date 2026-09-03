@@ -31,7 +31,12 @@ import sys
 import numpy as np
 import pandas as pd
 
-REPO = Path("/Users/rose501/Library/CloudStorage/OneDrive-PNNL/Desktop/IEDO")
+# Path configuration: load BASE and named input paths from config.toml at
+# the repo root (falls back to config.example.toml if config.toml is absent).
+import sys as _sys
+_sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _config import BASE  # noqa: E402
+REPO = BASE  # backwards-compat alias used by this script
 NLCD_CSV = REPO / "Scripts/method_comparison/outputs/full_run_nlcd_2026_04_23/nlcd_full_population.csv"
 OUT_DIR = REPO / "Scripts/applied_energy_paper/outputs/nlcd_wind"
 OUT_DIR.mkdir(parents=True, exist_ok=True)

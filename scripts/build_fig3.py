@@ -31,7 +31,14 @@ from rasterio.mask import mask
 from rasterio.windows import from_bounds
 import urllib.request, urllib.parse, os
 
-OUT = "/Users/rose501/OneDrive - PNNL/Desktop/IEDO/Communications/Paper/Applied Energy/manuscript/figures/fig3_conceptual_ohio.png"
+# Path configuration: load FIGURES output dir and named input paths from
+# config.toml at the repo root (falls back to config.example.toml).
+import sys as _sys
+from pathlib import Path as _Path
+_sys.path.insert(0, str(_Path(__file__).resolve().parent))
+from _config import FIGURES, REV_SOLAR  # noqa: E402
+
+OUT = str(FIGURES / "fig3_conceptual_ohio.png")
 
 # --- Parcel in EPSG:5070 (same as reV) ---
 p_wgs = gpd.read_file("/tmp/fig3/parcel_A.gpkg").to_crs(4326)
@@ -60,9 +67,9 @@ print(f"NLCD img shape: {nlcd_img.shape}, size {os.path.getsize(nlcd_png)} bytes
 
 # --- reV rasters clipped to same bbox ---
 rev_paths = {
-    "reV Open":      "/Users/rose501/OneDrive - PNNL/Desktop/IEDO/Data/reV Exclusions/composite_exclusions_open.tif",
-    "reV Reference": "/Users/rose501/OneDrive - PNNL/Desktop/IEDO/Data/reV Exclusions/composite_exclusions_reference.tif",
-    "reV Limited":   "/Users/rose501/OneDrive - PNNL/Desktop/IEDO/Data/reV Exclusions/composite_exclusions_limited.tif",
+    "reV Open":      str(REV_SOLAR["open"]),
+    "reV Reference": str(REV_SOLAR["reference"]),
+    "reV Limited":   str(REV_SOLAR["limited"]),
 }
 rev_arrays = {}
 for lbl, pth in rev_paths.items():
