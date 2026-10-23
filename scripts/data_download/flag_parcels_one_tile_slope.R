@@ -30,7 +30,8 @@ TILE     <- args[[1]]
 MASK_TIF <- args[[2]]
 OUT_CSV  <- args[[3]]
 
-REPO <- "/Users/rose501/Library/CloudStorage/OneDrive-PNNL/Desktop/IEDO"
+REPO <- Sys.getenv("IEDO_BASE")
+if (!nzchar(REPO)) stop("export IEDO_BASE=/path/to/IEDO (data root)")
 PARCELS_GPKG <- file.path(REPO,
   "Scripts/applied_energy_paper/intermediate/parcels_conus_2026_04_23.gpkg")
 

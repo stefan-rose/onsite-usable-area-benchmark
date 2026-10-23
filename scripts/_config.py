@@ -1,7 +1,7 @@
 """Central path configuration for the onsite-usable-area-benchmark pipeline.
 
-Reads ``config.toml`` at the repo root if present, otherwise falls back to
-``config.example.toml``. Exposes ``BASE`` (external data root) plus resolved
+Reads ``config.example.toml`` and merges a local ``config.toml`` over it if
+present; the ``IEDO_BASE`` environment variable overrides ``paths.base``. Exposes ``BASE`` (external data root) plus resolved
 Path objects for every input dataset referenced by the pipeline scripts.
 
 Usage from a script::
@@ -34,16 +34,36 @@ _REPO_ROOT = _HERE.parent
 _CONFIG_TOML = _REPO_ROOT / "config.toml"
 _CONFIG_EXAMPLE = _REPO_ROOT / "config.example.toml"
 
-_ACTIVE_CONFIG = _CONFIG_TOML if _CONFIG_TOML.exists() else _CONFIG_EXAMPLE
+import os
 
-with open(_ACTIVE_CONFIG, "rb") as _f:
+
+def _merge(base: dict, over: dict) -> dict:
+    out = dict(base)
+    for k, v in over.items():
+        out[k] = _merge(out[k], v) if isinstance(v, dict) and isinstance(out.get(k), dict) else v
+    return out
+
+
+# config.example.toml is the template; a local config.toml (gitignored) is
+# merged over it, so it may hold only the keys that differ (e.g. paths.base).
+with open(_CONFIG_EXAMPLE, "rb") as _f:
     _cfg = tomllib.load(_f)
+if _CONFIG_TOML.exists():
+    with open(_CONFIG_TOML, "rb") as _f:
+        _cfg = _merge(_cfg, tomllib.load(_f))
+if os.environ.get("IEDO_BASE"):
+    _cfg["paths"]["base"] = os.environ["IEDO_BASE"]
+_ACTIVE_CONFIG = _CONFIG_TOML if _CONFIG_TOML.exists() else _CONFIG_EXAMPLE
 
 
 # ---------------------------------------------------------------------------
 # Path resolution helpers
 # ---------------------------------------------------------------------------
 BASE = Path(_cfg["paths"]["base"]).expanduser()
+if not BASE.exists():
+    raise FileNotFoundError(
+        f"Data root {BASE} not found. Set paths.base in config.toml or export IEDO_BASE."
+    )
 
 
 def _base_rel(p: str) -> Path:

@@ -12,7 +12,7 @@
 
 set -euo pipefail
 
-REPO="/Users/rose501/Library/CloudStorage/OneDrive-PNNL/Desktop/IEDO"
+REPO="${IEDO_BASE:?export IEDO_BASE=/path/to/IEDO (data root)}"
 TMP_DIR="$REPO/Data/wind_exclusions/NWI/_tmp"
 LOG="$REPO/Data/wind_exclusions/NWI/_watchdog.log"
 

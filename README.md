@@ -24,8 +24,7 @@ cd onsite-usable-area-benchmark
 pixi install
 
 # 3. Configure local paths (input data locations)
-cp config.example.toml config.toml
-# then edit config.toml to point at your local copies of the input data
+printf '[paths]\nbase = "/your/path/to/IEDO"\n' > config.toml
 # (see docs/DATA_SOURCES.md for where to obtain each dataset)
 
 # 4. Run the pipeline (see docs/PIPELINE.md for the full script order)
@@ -67,11 +66,10 @@ Underlying data are **not redistributed in this repository**. See [`docs/DATA_SO
 
 All pipeline scripts load their input paths from a single `config.toml` at the repo root, via the shared helpers `scripts/_config.py` (Python) and `scripts/_config.R` (R). To run on a new machine:
 
-1. Copy `config.example.toml` to `config.toml`.
-2. Edit `[paths].base` to point at your local data root.
-3. Adjust any input paths under `[inputs.*]` if your data layout differs from the author's default.
+1. Create `config.toml` containing only `[paths]` and `base = "/your/path/to/IEDO"`. Alternatively, export `IEDO_BASE=/your/path/to/IEDO`.
+2. Add any `[inputs.*]` overrides to `config.toml` only if your data layout differs from the defaults in `config.example.toml`.
 
-`config.toml` is gitignored so your local paths never enter version control. If `config.toml` is absent, the helpers fall back to `config.example.toml` (which contains the original author's paths).
+`config.toml` is gitignored, so your local paths never enter version control. The helpers read `config.example.toml` and merge `config.toml` over it. `IEDO_BASE` overrides `paths.base`. Standalone scripts under `scripts/data_download/` and `scripts/validation/` read `IEDO_BASE` directly.
 
 **Current caveat.** Scripts still write their outputs to `<base>/Scripts/method_comparison/outputs/...` rather than to the repo-local `outputs/` directory. This preserves the original inter-script dependency layout (each script reads the previous script's outputs from that same rooted location). Overriding `paths.base` propagates to all output locations consistently. A future refactor will migrate the output tree into the repo (`OUTPUTS` and `INTERMEDIATE` are already exposed in `_config` for this purpose but not yet consumed by the pipeline scripts).
 

@@ -21,8 +21,11 @@
 # Root of the local data directory. All "relative to paths.base" values
 # below are joined against this root.
 #
-# On the original author's system this is:
-base = "/Users/rose501/Library/CloudStorage/OneDrive-PNNL/Desktop/IEDO"
+# Set your own root in a local, gitignored config.toml containing only:
+#   [paths]
+#   base = "/your/path/to/IEDO"
+# or export IEDO_BASE. Either overrides this placeholder.
+base = "~/path/to/IEDO"
 
 # Working directory for per-parcel intermediates (parquet, gpkg). Defaults
 # to the intermediate/ directory inside the analysis repo.

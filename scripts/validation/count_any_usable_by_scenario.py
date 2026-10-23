@@ -3,8 +3,8 @@ Denominators:
   Solar: all 305,123 manufacturing parcels in CONUS.
   Wind: parcels >= 1 acre (paper's floor).
 """
-import pandas as pd, glob
-BASE = "/Users/rose501/OneDrive - PNNL/Desktop/IEDO/Scripts"
+import os, pandas as pd, glob
+BASE = os.path.join(os.environ["IEDO_BASE"], "Scripts")  # export IEDO_BASE=/path/to/IEDO
 MC = f"{BASE}/method_comparison/outputs"
 AE = f"{BASE}/applied_energy_paper/outputs"
 

@@ -2,7 +2,8 @@
 suppressPackageStartupMessages({
   library(dplyr); library(readr); library(purrr); library(sf)
 })
-REPO <- "/Users/rose501/Library/CloudStorage/OneDrive-PNNL/Desktop/IEDO"
+REPO <- Sys.getenv("IEDO_BASE")
+if (!nzchar(REPO)) stop("export IEDO_BASE=/path/to/IEDO (data root)")
 PER_STATE_DIR <- file.path(REPO, "Data/wind_exclusions/NWI")
 OUT <- file.path(REPO, "Scripts/applied_energy_paper/intermediate/wind_flags/flag_nwi.csv")
 PARCELS_GPKG <- file.path(REPO,

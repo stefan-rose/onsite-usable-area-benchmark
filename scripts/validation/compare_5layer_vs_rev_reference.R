@@ -9,7 +9,8 @@ suppressPackageStartupMessages({
   library(dplyr); library(readr); library(tibble); library(tidyr)
 })
 
-REPO <- "/Users/rose501/Library/CloudStorage/OneDrive-PNNL/Desktop/IEDO"
+REPO <- Sys.getenv("IEDO_BASE")
+if (!nzchar(REPO)) stop("export IEDO_BASE=/path/to/IEDO (data root)")
 
 NLCD_7LAYER <- file.path(REPO,
   "Scripts/applied_energy_paper/outputs/nlcd_wind/nlcd_wind_percentage_plus_binary.csv")

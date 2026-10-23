@@ -1,7 +1,7 @@
 # Central path configuration for the onsite-usable-area-benchmark pipeline.
 #
-# Reads config.toml at the repo root if present, otherwise falls back to
-# config.example.toml. Exposes BASE (external data root) and named
+# Reads config.example.toml and merges a local config.toml over it if
+# present; the IEDO_BASE environment variable overrides paths.base. Exposes BASE (external data root) and named
 # input-path variables for every input dataset referenced by the R
 # pipeline scripts.
 #
@@ -44,13 +44,22 @@ suppressPackageStartupMessages({
 .CONFIG_TOML <- file.path(.REPO_ROOT, "config.toml")
 .CONFIG_EXAMPLE <- file.path(.REPO_ROOT, "config.example.toml")
 
+# config.example.toml is the template; a local config.toml (gitignored) is
+# merged over it, so it may hold only the keys that differ (e.g. paths.base).
+.cfg <- RcppTOML::parseTOML(.CONFIG_EXAMPLE)
+if (file.exists(.CONFIG_TOML)) {
+  .cfg <- utils::modifyList(.cfg, RcppTOML::parseTOML(.CONFIG_TOML))
+}
+if (nzchar(Sys.getenv("IEDO_BASE"))) .cfg$paths$base <- Sys.getenv("IEDO_BASE")
 .active_config <- if (file.exists(.CONFIG_TOML)) .CONFIG_TOML else .CONFIG_EXAMPLE
-.cfg <- RcppTOML::parseTOML(.active_config)
 
 # ---------------------------------------------------------------------------
 # Path resolution helpers
 # ---------------------------------------------------------------------------
 BASE <- path.expand(.cfg$paths$base)
+if (!dir.exists(BASE)) {
+  stop("Data root ", BASE, " not found. Set paths.base in config.toml or export IEDO_BASE.")
+}
 
 .base_rel <- function(p) {
   p <- path.expand(p)
