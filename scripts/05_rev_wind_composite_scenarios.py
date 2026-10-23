@@ -32,7 +32,14 @@ Run
 
 Author: Stefan Rose / PNNL
 Dataset version: 2026_04_23 (post FIPS fix)
-Wind config: 115 m hub height / 170 m rotor diameter (NLR reV standard)
+Wind config: 115 m hub height / 170 m rotor diameter (NLR reV standard) by
+default; other turbine configurations via --turbine <id> (see
+[inputs.rev_wind_turbines] in config.example.toml), e.g.
+  pixi run python -u scripts/05_rev_wind_composite_scenarios.py --turbine ge_80hh_77rd
+Extraction convention (all turbines, unchanged from the headline run):
+rasterstats cell-centre mean (all_touched=False) x parcel area for medium,
+large and xlarge parcels; raster value at the parcel centroid for tiny and
+small parcels and as fallback; no parcel-area floor and no cap.
 """
 
 from __future__ import annotations
@@ -58,20 +65,19 @@ sys.stdout.reconfigure(line_buffering=True)
 # the repo root (falls back to config.example.toml if config.toml is absent).
 import sys as _sys
 _sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _config import BASE  # noqa: E402
+from _config import BASE, REV_WIND_TURBINES  # noqa: E402
 PARCEL_GPKG  = BASE / "Scripts/applied_energy_paper/intermediate/parcels_conus_2026_04_23.gpkg"
-REV_DIR      = BASE / "Data/reV Exclusions/Wind"
 OUT_BASE     = BASE / "Scripts/method_comparison/outputs"
 
-SCENARIOS = {
-    "open":      REV_DIR / "lbw_open_115hh_170rd.tif",
-    "reference": REV_DIR / "lbw_reference_115hh_170rd.tif",
-    "limited":   REV_DIR / "lbw_limited_115hh_170rd.tif",
-}
+# Turbine configurations come from config.toml ([inputs.rev_wind] for the
+# headline 115/170 layers; [inputs.rev_wind_turbines.<id>] for the others).
+DEFAULT_TURBINE = "bespoke_115hh_170rd"
+SCENARIO_NAMES  = ["open", "reference", "limited"]
 
-# Same raster conventions as solar composites
-REV_NODATA_OVERRIDE = 255
-RASTER_CRS          = "EPSG:5070"
+# Raster CRS and nodata are read from each raster at run time (the April
+# 115/170 layers are EPSG:5070 / ~92.1 m; the 10/6 layers are NLR Albers /
+# 90 m). The fallback below applies only if a raster declares no nodata.
+REV_NODATA_FALLBACK = 255
 CENTROID_ONLY_BINS  = {"tiny", "small"}
 DATASET_TAG         = "2026_04_23"
 ONE_ACRE_M2         = 4046.856  # for flag_wind_below_1ac
@@ -79,8 +85,18 @@ ONE_ACRE_M2         = 4046.856  # for flag_wind_below_1ac
 
 # ─── Helpers ────────────────────────────────────────────────────────────────
 
+def raster_meta(raster_path: Path) -> tuple:
+    """Return (crs, nodata) declared by the raster."""
+    with rasterio.open(raster_path) as src:
+        nodata = src.nodata if src.nodata is not None else REV_NODATA_FALLBACK
+        return src.crs, nodata
+
+
 def sample_centroids(gdf_sub: gpd.GeoDataFrame, raster_path: Path) -> np.ndarray:
-    centroids = gdf_sub.to_crs(RASTER_CRS).geometry.centroid
+    crs, nodata = raster_meta(raster_path)
+    # Centroid computed in the raster's (equal-area) CRS, as in the original
+    # EPSG:5070-only version of this script.
+    centroids = gdf_sub.to_crs(crs).geometry.centroid
     xs = centroids.x.values
     ys = centroids.y.values
     with rasterio.open(raster_path) as src:
@@ -88,8 +104,8 @@ def sample_centroids(gdf_sub: gpd.GeoDataFrame, raster_path: Path) -> np.ndarray
             [v[0] for v in src.sample(zip(xs, ys), indexes=1)],
             dtype="float64",
         )
-    # nodata=255 → NaN (outside raster extent or truly missing)
-    vals[vals == REV_NODATA_OVERRIDE] = np.nan
+    # nodata → NaN (outside raster extent or truly missing)
+    vals[vals == nodata] = np.nan
     return vals
 
 
@@ -117,12 +133,13 @@ def process_state(state: str, state_gdf: gpd.GeoDataFrame, raster_path: Path) ->
         results.append(cent_df)
 
     if len(gdf_zonal) > 0:
-        gdf_zonal_proj = gdf_zonal.to_crs(RASTER_CRS)
+        crs, nodata = raster_meta(raster_path)
+        gdf_zonal_proj = gdf_zonal.to_crs(crs)
         stats = zonal_stats(
             gdf_zonal_proj,
             str(raster_path),
             stats=["mean", "count"],
-            nodata=REV_NODATA_OVERRIDE,
+            nodata=nodata,
             all_touched=False,
         )
         zonal_df = pd.DataFrame(stats)
@@ -245,8 +262,12 @@ def run_scenario(scenario: str, raster_path: Path, gdf: gpd.GeoDataFrame,
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument(
-        "--scenarios", nargs="+", choices=list(SCENARIOS.keys()),
-        default=list(SCENARIOS.keys()),
+        "--turbine", default=DEFAULT_TURBINE, choices=list(REV_WIND_TURBINES.keys()),
+        help=f"Turbine configuration id from config.toml (default: {DEFAULT_TURBINE}).",
+    )
+    ap.add_argument(
+        "--scenarios", nargs="+", choices=SCENARIO_NAMES,
+        default=SCENARIO_NAMES,
         help="Which wind scenarios to run (default: all three).",
     )
     ap.add_argument(
@@ -257,10 +278,13 @@ def main() -> None:
     dry = bool(args.dry_run)
     dry_states = set(args.dry_run) if dry else None
     scenarios_to_run = args.scenarios
+    turbine = REV_WIND_TURBINES[args.turbine]
+    scenario_paths = turbine["scenarios"]
 
     print(f"Dataset version: {DATASET_TAG}")
     print(f"Parcel source:   {PARCEL_GPKG}")
-    print(f"Wind config:     115 m hub height / 170 m rotor diameter")
+    print(f"Wind config:     {args.turbine}: {turbine['hub_height_m']} m hub height / "
+          f"{turbine['rotor_diameter_m']} m rotor diameter")
     if dry:
         print(f"DRY RUN mode. States: {sorted(dry_states)}  Scenarios: {scenarios_to_run}")
     else:
@@ -286,8 +310,14 @@ def main() -> None:
     suffix = f"_dryrun_{'_'.join(sorted(dry_states))}" if dry else ""
     t_all = time.time()
     for scenario in scenarios_to_run:
-        out_dir = OUT_BASE / f"full_run_wind_{scenario}_{DATASET_TAG}{suffix}"
-        run_scenario(scenario, SCENARIOS[scenario], gdf, out_dir)
+        # Headline 115/170 keeps its original output directory names so the
+        # published numbers remain traceable; other turbines get a turbine tag.
+        ttag = "" if args.turbine == DEFAULT_TURBINE else f"{args.turbine}_"
+        out_dir = OUT_BASE / f"full_run_wind_{ttag}{scenario}_{DATASET_TAG}{suffix}"
+        if scenario not in scenario_paths:
+            print(f"\n  !! {args.turbine}: no {scenario} raster configured, skipping")
+            continue
+        run_scenario(scenario, scenario_paths[scenario], gdf, out_dir)
 
     print(f"\n{'='*70}")
     print(f"All scenarios complete. Total runtime: {(time.time()-t_all)/60:.1f} min")

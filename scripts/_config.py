@@ -93,6 +93,26 @@ REV_WIND: dict[str, Path] = {
     "limited": _base_rel(_cfg["inputs"]["rev_wind"]["limited"]),
 }
 
+# Wind turbine configurations keyed by turbine id. The headline 115/170
+# layers ([inputs.rev_wind]) are always present as "bespoke_115hh_170rd";
+# additional configurations come from [inputs.rev_wind_turbines.<id>].
+_ws = _cfg.get("wind_spec", {})
+REV_WIND_TURBINES: dict[str, dict] = {
+    "bespoke_115hh_170rd": {
+        "hub_height_m": _ws.get("hub_height_m", 115),
+        "rotor_diameter_m": _ws.get("rotor_diameter_m", 170),
+        "scenarios": dict(REV_WIND),
+    }
+}
+for _tid, _t in _cfg["inputs"].get("rev_wind_turbines", {}).items():
+    REV_WIND_TURBINES[_tid] = {
+        "hub_height_m": _t["hub_height_m"],
+        "rotor_diameter_m": _t["rotor_diameter_m"],
+        "scenarios": {
+            _s: _base_rel(_t[_s]) for _s in ("open", "reference", "limited") if _s in _t
+        },
+    }
+
 
 # ---------------------------------------------------------------------------
 # NLCD (via Google Earth Engine)
@@ -129,6 +149,7 @@ __all__ = [
     "FACILITY_CSV",
     "REV_SOLAR",
     "REV_WIND",
+    "REV_WIND_TURBINES",
     "NLCD_GEE_DIR",
     "WIND_BINARY",
     "CRS",

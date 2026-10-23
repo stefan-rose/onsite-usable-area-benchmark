@@ -73,9 +73,56 @@ parcel_joined = "Data/reV Exclusions/conus_percent_inclusion_all_parcels.tif"
 
 [inputs.rev_wind]
 # 115 m hub height, 170 m rotor diameter. All relative to paths.base.
+# Headline (April 2026) layers: ~92.1 m grid, EPSG:5070, nodata 255.
 open      = "Data/reV Exclusions/Wind/lbw_open_115hh_170rd.tif"
 reference = "Data/reV Exclusions/Wind/lbw_reference_115hh_170rd.tif"
 limited   = "Data/reV Exclusions/Wind/lbw_limited_115hh_170rd.tif"
+
+# Additional wind turbine configurations (2026-10-06 NLR delivery and later).
+# 90 m grid, NLR Albers (ESRI:102008-equivalent), nodata 255. Each table is
+# keyed by a turbine id consumed by
+#   scripts/05_rev_wind_composite_scenarios.py --turbine <id>
+# The default turbine id "bespoke_115hh_170rd" maps to [inputs.rev_wind]
+# above. Scenario entries whose file does not yet exist are skipped at run
+# time with a warning.
+# Open is turbine-agnostic (NLR, 2026-10-23: the Open scenario applies no
+# turbine-specific setbacks), so every turbine points at the generic Open
+# layer. The 90 m generic Open (wind_open_exclusions.tif) matches the published
+# ~92.1 m lbw_open to 1.000004 in included area (scripts/validation/
+# compare_wind_open_layers.py).
+# TODO (on NLR delivery): replace the limited placeholder filenames below
+# with the delivered names and record their md5 in the run log.
+[inputs.rev_wind_turbines.ge_80hh_77rd]
+hub_height_m     = 80
+rotor_diameter_m = 77
+reference = "Data/reV Exclusions/Wind/reV_composite_layers_10_6_26/GE_80hh_77rd/wind_exclusions_80hh_77rd.tif"
+open      = "Data/reV Exclusions/Wind/wind_open_exclusions.tif"  # generic Open, 90 m (NLR 2026-10-23; md5 d510fe2309ba6e87ae7662f437d1d529)
+limited   = "Data/reV Exclusions/Wind/wind_limited_exclusions_80hh_77rd.tif"  # NLR 2026-10-23; md5 ecb328de5d37a30c073d62ac2e89b5e6
+
+# Smaller turbine classes (Reference only; turbine-class sensitivity table).
+[inputs.rev_wind_turbines.bergey_24hh_10rd]
+hub_height_m     = 24
+rotor_diameter_m = 9.6
+reference = "Data/reV Exclusions/Wind/reV_composite_layers_10_6_26/Bergey_24hh_10rd/wind_exclusions_24hh_10rd.tif"
+
+[inputs.rev_wind_turbines.npower_37hh_21rd]
+hub_height_m     = 37
+rotor_diameter_m = 20.7
+reference = "Data/reV Exclusions/Wind/reV_composite_layers_10_6_26/NorthernPower_37hh_21rd/wind_exclusions_37hh_21rd.tif"
+
+[inputs.rev_wind_turbines.vestas_60hh_47rd]
+hub_height_m     = 60
+rotor_diameter_m = 47
+reference = "Data/reV Exclusions/Wind/reV_composite_layers_10_6_26/Vestas_60hh_47rd/wind_exclusions_60hh_47rd.tif"
+
+# 115/170 on the 10/6 90 m grid, used to validate the April headline layers
+# against the grid the GE layers are delivered on.
+[inputs.rev_wind_turbines.bespoke_115hh_170rd_grid90]
+hub_height_m     = 115
+rotor_diameter_m = 170
+reference = "Data/reV Exclusions/Wind/reV_composite_layers_10_6_26/Bespoke_115hh_170rd/wind_exclusions_115hh_170rd.tif"
+open      = "Data/reV Exclusions/Wind/wind_open_exclusions.tif"  # generic Open, 90 m (NLR 2026-10-23; md5 d510fe2309ba6e87ae7662f437d1d529)
+limited   = "Data/reV Exclusions/Wind/reV_composite_layers_10_6_26/Bespoke_115hh_170rd/PENDING_limited_115hh_170rd.tif"
 
 # -----------------------------------------------------------------------------
 # NLCD 2021 (via Google Earth Engine)
