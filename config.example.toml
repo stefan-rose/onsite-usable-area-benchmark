@@ -125,7 +125,7 @@ hub_height_m     = 115
 rotor_diameter_m = 170
 reference = "Data/reV Exclusions/Wind/reV_composite_layers_10_6_26/Bespoke_115hh_170rd/wind_exclusions_115hh_170rd.tif"
 open      = "Data/reV Exclusions/Wind/wind_open_exclusions.tif"  # generic Open, 90 m (NLR 2026-10-23; md5 d510fe2309ba6e87ae7662f437d1d529)
-limited   = "Data/reV Exclusions/Wind/reV_composite_layers_10_6_26/Bespoke_115hh_170rd/PENDING_limited_115hh_170rd.tif"
+limited   = "Data/reV Exclusions/Wind/wind_limited_exclusions_115hh_170rd.tif"  # 90 m (NLR 2026-10-26; md5 be74068193193fc6c9652aa4a3af638f)
 
 # -----------------------------------------------------------------------------
 # NLCD 2021 (via Google Earth Engine)
