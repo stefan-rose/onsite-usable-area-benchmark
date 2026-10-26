@@ -11,6 +11,7 @@ Outputs
                                     replaced by the shared 90 m Open and the
                                     115/170 (90 m grid) and 80/77 Ref/Limited rows
   outputs/fig1_totals_grid90.csv    Fig 1 data (national totals, M ac)
+Tracked copies of both figure CSVs: figures/data/fig_bins.csv, figures/data/fig_headline_totals.csv
 
 Checks (exit non-zero on failure)
   F1  solar and NLCD wind rows identical to the published CSV
@@ -31,6 +32,7 @@ import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "outputs"
+FIGDATA = ROOT / "figures" / "data"  # tracked; read by the figure specs
 BINS = ["tiny", "small", "medium", "large", "xlarge"]
 G90 = "bespoke_115hh_170rd_grid90"
 GE = "ge_80hh_77rd"
@@ -89,9 +91,12 @@ def main() -> None:
         rows.append((label, t / 1e6))
 
     fig2.to_csv(OUT / "fig2_bins_grid90.csv", index=False)
+    FIGDATA.mkdir(parents=True, exist_ok=True)
+    fig2.to_csv(FIGDATA / "fig_bins.csv", index=False)  # tracked copy
     f1 = (fig2.groupby(["technology", "scenario"], sort=False).usable_ac.sum() / 1e6).round(4).reset_index()
     f1.columns = ["technology", "scenario", "usable_Mac"]
     f1.to_csv(OUT / "fig1_totals_grid90.csv", index=False)
+    f1.to_csv(FIGDATA / "fig_headline_totals.csv", index=False)  # tracked copy
     print(f1.to_string(index=False))
 
     print("\nChecks:", "ALL PASS" if not fails else "FAILURES")

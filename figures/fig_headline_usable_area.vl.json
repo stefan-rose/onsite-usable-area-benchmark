@@ -1,0 +1,470 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "_comment": "Figure 1 headline. Values: onsite-usable-area-benchmark repository, figures/data/fig_headline_totals.csv (scripts 12+13, 2026-10-26), inlined by layer. Wind on the common 90 m grid; reV Open and NLCD carry no turbine setback and are shared by the two wind rows. Diagnostics excluded (reV Parcel Joined, NLCD 7-layer wind). Sized for print: 1 px = 1 pt at the 468 pt text width; rendered to vector PDF with vl-convert 1.9.0 (PNG kept as preview). 2026-10-26 print revision removed the in-figure title/subtitle (caption carries it) and cut padding.",
+  "background": "white",
+  "padding": {
+    "top": 4,
+    "right": 6,
+    "bottom": 2,
+    "left": 2
+  },
+  "layer": [
+    {
+      "data": {
+        "values": [
+          {
+            "technology": "Solar",
+            "x_min": 0.984,
+            "x_max": 5.727
+          },
+          {
+            "technology": "Wind (115/170)",
+            "x_min": 0.235,
+            "x_max": 4.414
+          },
+          {
+            "technology": "Wind (80/77)",
+            "x_min": 0.435,
+            "x_max": 4.414
+          }
+        ]
+      },
+      "mark": {
+        "type": "bar",
+        "size": 24,
+        "color": "#6BAED6",
+        "opacity": 0.35,
+        "stroke": "#3182BD",
+        "strokeWidth": 0.9
+      },
+      "encoding": {
+        "y": {
+          "field": "technology",
+          "type": "nominal",
+          "axis": {
+            "title": null,
+            "labelFontSize": 10,
+            "labelFontWeight": "bold",
+            "labelPadding": 6,
+            "domain": false,
+            "ticks": false
+          },
+          "scale": {
+            "padding": 0.55
+          },
+          "sort": [
+            "Solar",
+            "Wind (115/170)",
+            "Wind (80/77)"
+          ]
+        },
+        "x": {
+          "field": "x_min",
+          "type": "quantitative",
+          "scale": {
+            "type": "log",
+            "domain": [
+              0.15,
+              8
+            ]
+          },
+          "axis": {
+            "title": "Usable area (million acres, log scale)",
+            "titleFontSize": 9.5,
+            "grid": true,
+            "gridOpacity": 0.35,
+            "labelFontSize": 9,
+            "values": [
+              0.2,
+              0.5,
+              1,
+              2,
+              5
+            ],
+            "format": "~g",
+            "titlePadding": 6
+          }
+        },
+        "x2": {
+          "field": "x_max"
+        }
+      }
+    },
+    {
+      "data": {
+        "values": [
+          {
+            "technology": "Solar",
+            "x_ref": 2.323
+          },
+          {
+            "technology": "Wind (115/170)",
+            "x_ref": 0.794
+          },
+          {
+            "technology": "Wind (80/77)",
+            "x_ref": 1.241
+          }
+        ]
+      },
+      "mark": {
+        "type": "tick",
+        "size": 24,
+        "color": "#08519C",
+        "thickness": 2.5,
+        "orient": "vertical"
+      },
+      "encoding": {
+        "y": {
+          "field": "technology",
+          "type": "nominal",
+          "sort": [
+            "Solar",
+            "Wind (115/170)",
+            "Wind (80/77)"
+          ]
+        },
+        "x": {
+          "field": "x_ref",
+          "type": "quantitative"
+        }
+      }
+    },
+    {
+      "data": {
+        "values": [
+          {
+            "technology": "Solar",
+            "x": 0.984,
+            "label": "reV Limited"
+          },
+          {
+            "technology": "Solar",
+            "x": 2.323,
+            "label": "reV Reference"
+          },
+          {
+            "technology": "Solar",
+            "x": 5.727,
+            "label": "reV Open"
+          },
+          {
+            "technology": "Wind (115/170)",
+            "x": 0.235,
+            "label": "reV Limited"
+          },
+          {
+            "technology": "Wind (115/170)",
+            "x": 0.794,
+            "label": "reV Reference"
+          },
+          {
+            "technology": "Wind (115/170)",
+            "x": 4.414,
+            "label": "reV Open"
+          },
+          {
+            "technology": "Wind (80/77)",
+            "x": 0.435,
+            "label": "reV Limited"
+          },
+          {
+            "technology": "Wind (80/77)",
+            "x": 1.241,
+            "label": "reV Reference"
+          },
+          {
+            "technology": "Wind (80/77)",
+            "x": 4.414,
+            "label": "reV Open"
+          }
+        ]
+      },
+      "mark": {
+        "type": "text",
+        "align": "center",
+        "baseline": "bottom",
+        "dy": -25,
+        "fontSize": 8,
+        "color": "#08519C"
+      },
+      "encoding": {
+        "y": {
+          "field": "technology",
+          "type": "nominal",
+          "sort": [
+            "Solar",
+            "Wind (115/170)",
+            "Wind (80/77)"
+          ]
+        },
+        "x": {
+          "field": "x",
+          "type": "quantitative"
+        },
+        "text": {
+          "field": "label"
+        }
+      }
+    },
+    {
+      "data": {
+        "values": [
+          {
+            "technology": "Solar",
+            "x": 0.984,
+            "value": "0.98"
+          },
+          {
+            "technology": "Solar",
+            "x": 2.323,
+            "value": "2.32"
+          },
+          {
+            "technology": "Solar",
+            "x": 5.727,
+            "value": "5.73"
+          },
+          {
+            "technology": "Wind (115/170)",
+            "x": 0.235,
+            "value": "0.23"
+          },
+          {
+            "technology": "Wind (115/170)",
+            "x": 0.794,
+            "value": "0.79"
+          },
+          {
+            "technology": "Wind (115/170)",
+            "x": 4.414,
+            "value": "4.41"
+          },
+          {
+            "technology": "Wind (80/77)",
+            "x": 0.435,
+            "value": "0.43"
+          },
+          {
+            "technology": "Wind (80/77)",
+            "x": 1.241,
+            "value": "1.24"
+          },
+          {
+            "technology": "Wind (80/77)",
+            "x": 4.414,
+            "value": "4.41"
+          }
+        ]
+      },
+      "mark": {
+        "type": "text",
+        "align": "center",
+        "baseline": "bottom",
+        "dy": -15,
+        "fontSize": 9,
+        "fontWeight": "bold",
+        "color": "#08306B"
+      },
+      "encoding": {
+        "y": {
+          "field": "technology",
+          "type": "nominal",
+          "sort": [
+            "Solar",
+            "Wind (115/170)",
+            "Wind (80/77)"
+          ]
+        },
+        "x": {
+          "field": "x",
+          "type": "quantitative"
+        },
+        "text": {
+          "field": "value"
+        }
+      }
+    },
+    {
+      "data": {
+        "values": [
+          {
+            "technology": "Solar",
+            "x": 2.908
+          },
+          {
+            "technology": "Wind (115/170)",
+            "x": 2.721
+          },
+          {
+            "technology": "Wind (115/170)",
+            "x": 1.309
+          },
+          {
+            "technology": "Wind (80/77)",
+            "x": 2.721
+          },
+          {
+            "technology": "Wind (80/77)",
+            "x": 1.309
+          }
+        ]
+      },
+      "mark": {
+        "type": "point",
+        "filled": true,
+        "size": 55,
+        "color": "#238B45",
+        "stroke": "#00441B",
+        "strokeWidth": 0.9
+      },
+      "encoding": {
+        "y": {
+          "field": "technology",
+          "type": "nominal",
+          "sort": [
+            "Solar",
+            "Wind (115/170)",
+            "Wind (80/77)"
+          ]
+        },
+        "x": {
+          "field": "x",
+          "type": "quantitative"
+        }
+      }
+    },
+    {
+      "data": {
+        "values": [
+          {
+            "technology": "Solar",
+            "x": 2.908,
+            "label": "NLCD"
+          },
+          {
+            "technology": "Wind (115/170)",
+            "x": 2.721,
+            "label": "NLCD pct-only"
+          },
+          {
+            "technology": "Wind (115/170)",
+            "x": 1.309,
+            "label": "NLCD 5-layer"
+          },
+          {
+            "technology": "Wind (80/77)",
+            "x": 2.721,
+            "label": "NLCD pct-only"
+          },
+          {
+            "technology": "Wind (80/77)",
+            "x": 1.309,
+            "label": "NLCD 5-layer"
+          }
+        ]
+      },
+      "mark": {
+        "type": "text",
+        "align": "center",
+        "baseline": "top",
+        "dy": 14,
+        "fontSize": 8,
+        "fontWeight": "normal",
+        "color": "#00441B"
+      },
+      "encoding": {
+        "y": {
+          "field": "technology",
+          "type": "nominal",
+          "sort": [
+            "Solar",
+            "Wind (115/170)",
+            "Wind (80/77)"
+          ]
+        },
+        "x": {
+          "field": "x",
+          "type": "quantitative"
+        },
+        "text": {
+          "field": "label"
+        }
+      }
+    },
+    {
+      "data": {
+        "values": [
+          {
+            "technology": "Solar",
+            "x": 2.908,
+            "label": "2.91"
+          },
+          {
+            "technology": "Wind (115/170)",
+            "x": 2.721,
+            "label": "2.72"
+          },
+          {
+            "technology": "Wind (115/170)",
+            "x": 1.309,
+            "label": "1.31"
+          },
+          {
+            "technology": "Wind (80/77)",
+            "x": 2.721,
+            "label": "2.72"
+          },
+          {
+            "technology": "Wind (80/77)",
+            "x": 1.309,
+            "label": "1.31"
+          }
+        ]
+      },
+      "mark": {
+        "type": "text",
+        "align": "center",
+        "baseline": "top",
+        "dy": 23,
+        "fontSize": 9,
+        "fontWeight": "bold",
+        "color": "#00441B"
+      },
+      "encoding": {
+        "y": {
+          "field": "technology",
+          "type": "nominal",
+          "sort": [
+            "Solar",
+            "Wind (115/170)",
+            "Wind (80/77)"
+          ]
+        },
+        "x": {
+          "field": "x",
+          "type": "quantitative"
+        },
+        "text": {
+          "field": "label"
+        }
+      }
+    }
+  ],
+  "config": {
+    "view": {
+      "stroke": null
+    },
+    "font": "Arial",
+    "axis": {
+      "labelFont": "Arial",
+      "titleFont": "Arial",
+      "labelFontSize": 9,
+      "titleFontSize": 9.5,
+      "labelColor": "#222",
+      "titleColor": "#222"
+    }
+  },
+  "width": 372,
+  "height": 246
+}

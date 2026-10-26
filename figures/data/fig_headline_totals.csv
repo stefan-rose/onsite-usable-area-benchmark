@@ -1,0 +1,14 @@
+technology,scenario,usable_Mac
+solar,reV Open,5.7266
+solar,reV Parcel Joined,3.5675
+solar,reV Reference,2.3228
+solar,reV Limited,0.9842
+solar,NLCD,2.9082
+wind,NLCD pct-only,2.7211
+wind,NLCD 5-layer,1.3093
+wind,NLCD 7-layer (diagnostic),0.1374
+wind,reV Open,4.4141
+wind,reV Reference (80/77),1.241
+wind,reV Reference (115/170),0.794
+wind,reV Limited (80/77),0.4347
+wind,reV Limited (115/170),0.2346

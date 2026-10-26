@@ -1,0 +1,161 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "_data_source": "Data: onsite-usable-area-benchmark repository, figures/data/fig_bins.csv, written by scripts/13_build_manuscript_figure_data.py. Solar and NLCD rows carried from the 2026-07-31 bin table; reV wind rows from script 12 on the common 90 m grid (shared Open; 115/170 and 80/77 Reference/Limited). Print size: 1 px = 1 pt. Render: scripts/render_vegalite.py (vl-convert 1.9.0).",
+  "padding": {
+    "top": 4,
+    "left": 2,
+    "bottom": 2,
+    "right": 8
+  },
+  "config": {
+    "background": "white",
+    "view": {
+      "stroke": null
+    },
+    "font": "Arial",
+    "axis": {
+      "labelFont": "Arial",
+      "titleFont": "Arial",
+      "labelFontSize": 9,
+      "titleFontSize": 9,
+      "titleFontWeight": "normal",
+      "labelColor": "#222",
+      "titleColor": "#222",
+      "tickColor": "#888",
+      "domainColor": "#888",
+      "gridColor": "#e3e3e3"
+    },
+    "legend": {
+      "labelFont": "Arial",
+      "titleFont": "Arial",
+      "labelFontSize": 8,
+      "titleFontSize": 9,
+      "titleFontWeight": "normal",
+      "labelColor": "#222",
+      "titleColor": "#222",
+      "symbolSize": 80,
+      "symbolType": "square",
+      "columnPadding": 10
+    },
+    "header": {
+      "labelFont": "Arial",
+      "titleFont": "Arial",
+      "labelFontSize": 10,
+      "labelColor": "#222"
+    }
+  },
+  "data": {
+    "url": "data/fig_bins.csv"
+  },
+  "transform": [
+    {
+      "calculate": "datum.usable_ac / 1000000",
+      "as": "usable_Mac"
+    },
+    {
+      "calculate": "datum.technology == 'solar' ? 'Ground-mount solar' : 'Land-based wind'",
+      "as": "tech_label"
+    }
+  ],
+  "width": 330,
+  "height": {
+    "step": 13
+  },
+  "mark": {
+    "type": "bar"
+  },
+  "encoding": {
+    "row": {
+      "field": "tech_label",
+      "type": "nominal",
+      "sort": [
+        "Ground-mount solar",
+        "Land-based wind"
+      ],
+      "header": {
+        "title": null,
+        "labelFontWeight": "bold",
+        "labelAnchor": "start",
+        "labelOrient": "top",
+        "labelPadding": 3
+      }
+    },
+    "y": {
+      "field": "scenario",
+      "type": "nominal",
+      "axis": {
+        "title": null,
+        "labelLimit": 160,
+        "ticks": false,
+        "domain": false,
+        "labelPadding": 4
+      },
+      "sort": [
+        "reV Open",
+        "reV Parcel Joined",
+        "NLCD",
+        "NLCD pct-only",
+        "NLCD 5-layer",
+        "reV Reference",
+        "reV Reference (80/77)",
+        "reV Reference (115/170)",
+        "reV Limited",
+        "reV Limited (80/77)",
+        "reV Limited (115/170)",
+        "NLCD 7-layer (diagnostic)"
+      ]
+    },
+    "x": {
+      "field": "usable_Mac",
+      "type": "quantitative",
+      "stack": "zero",
+      "axis": {
+        "title": "Usable area (million ac)",
+        "grid": true,
+        "format": "~g",
+        "tickCount": 6
+      }
+    },
+    "color": {
+      "field": "size_bin",
+      "type": "nominal",
+      "scale": {
+        "domain": [
+          "tiny",
+          "small",
+          "medium",
+          "large",
+          "xlarge"
+        ],
+        "range": [
+          "#f0e5c9",
+          "#d9c48a",
+          "#b89e5a",
+          "#6f8f6f",
+          "#2a4d3a"
+        ]
+      },
+      "legend": {
+        "title": "Parcel size bin (ac)",
+        "orient": "bottom",
+        "columns": 5,
+        "labelExpr": "datum.label == 'tiny' ? 'tiny (<0.5)' : datum.label == 'small' ? 'small (0.5–1)' : datum.label == 'medium' ? 'medium (1–10)' : datum.label == 'large' ? 'large (10–100)' : 'xlarge (≥100)'",
+        "direction": "horizontal",
+        "gridAlign": "none",
+        "columnPadding": 9,
+        "symbolOffset": 0
+      }
+    },
+    "order": {
+      "field": "bin_order",
+      "type": "quantitative"
+    }
+  },
+  "spacing": 10,
+  "resolve": {
+    "scale": {
+      "x": "independent",
+      "y": "independent"
+    }
+  }
+}

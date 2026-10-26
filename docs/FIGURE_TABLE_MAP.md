@@ -20,12 +20,16 @@ Each manuscript figure and table is produced by (or aggregated from) specific sc
 
 ## Figures
 
-| Figure | Content | Produced by | Status |
+| Figure | Content | Produced by | Notes |
 |---|---|---|---|
-| 1 | Comparison plot: reV envelope + NLCD points, log-scale, solar and wind | *not yet included in this repo* | The final figure was rendered from `notes/fig1_scenario_totals.csv` in the manuscript repo via a vega-lite spec (`figures/fig1_headline_usable_area.vl.json`). The data source is Table 2 (headline totals) and the spec produces `figures/fig1_headline_usable_area.png`. **TODO:** port the fig-gen script into this repo. |
-| 2 | Parcel-size bin bar chart, solar and wind | *not yet included in this repo* | Data source is the same as Table 3. **TODO:** port the fig-gen script. |
-| 3 | Methods conceptual figure on the Ohio exemplar parcel | `scripts/build_fig3.py` | ✅ Included. |
+| 1 | Methods conceptual figure on the Ohio exemplar parcel | `scripts/build_fig3.py` | |
+| 2 | National headline usable-area totals: reV envelope and NLCD points, log scale, solar and wind | Data: `scripts/13_build_manuscript_figure_data.py` → `figures/data/fig_headline_totals.csv`. Spec: `figures/fig_headline_usable_area.vl.json` | Same values as Table 2. Diagnostic rows (reV Parcel Joined, NLCD 7-layer wind) are not plotted. Values are inlined in the spec by layer. |
+| 3 | Usable area by parcel size bin, solar and wind | Data: `scripts/13_build_manuscript_figure_data.py` → `figures/data/fig_bins.csv`. Spec: `figures/fig_bins.vl.json` | Same values as Table 3. Bar totals equal Table 2. |
 
-## TODO — figures 1 and 2
+Figures 2 and 3 are rendered to vector PDF at print size with
 
-The figure-generation scripts for Fig 1 (comparison plot) and Fig 2 (bin bar chart) live in the manuscript repo alongside the vega-lite specs. They should be ported here so the analysis repo can reproduce every published figure end-to-end. Until they are, the aggregated CSVs used to build them are still fully reproducible from this pipeline (see Table 2 and Table 3 rows above).
+```bash
+uv run --with vl-convert-python python scripts/render_vegalite.py figures/fig_bins.vl.json figures/fig_bins.pdf
+```
+
+`figures/data/` holds national aggregates only (no per-parcel values). Script 13 writes these tracked copies alongside its `outputs/` files.

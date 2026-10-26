@@ -46,6 +46,8 @@ pixi run python scripts/02_rev_solar_composite_scenarios.py
 │   ├── PIPELINE.md                  Script run order + expected outputs
 │   ├── DATA_SOURCES.md              Every input dataset with DOI/URL
 │   └── FIGURE_TABLE_MAP.md          Manuscript figure/table → script mapping
+├── figures/                         Vega-Lite specs, rendered PDFs, and figure data
+│   └── data/                        Aggregate CSVs behind the figures (committed)
 ├── scripts/                         12 numbered pipeline scripts + fig-gen
 │   ├── data_download/               NWI + slope tile download & flagging helpers
 │   └── validation/                  Cross-method validation scripts

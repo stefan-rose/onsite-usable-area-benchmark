@@ -1,0 +1,66 @@
+technology,scenario,size_bin,usable_ac,bin_order
+solar,reV Open,tiny,11279.8,0
+solar,reV Open,small,20081.2,1
+solar,reV Open,medium,415042.7,2
+solar,reV Open,large,1397615.2,3
+solar,reV Open,xlarge,3882574.5,4
+solar,reV Parcel Joined,tiny,140.7,0
+solar,reV Parcel Joined,small,430.5,1
+solar,reV Parcel Joined,medium,58879.7,2
+solar,reV Parcel Joined,large,701404.3,3
+solar,reV Parcel Joined,xlarge,2806601.3,4
+solar,reV Reference,tiny,224.2,0
+solar,reV Reference,small,661.0,1
+solar,reV Reference,medium,72686.9,2
+solar,reV Reference,large,465752.7,3
+solar,reV Reference,xlarge,1783510.3,4
+solar,reV Limited,tiny,7.2,0
+solar,reV Limited,small,16.8,1
+solar,reV Limited,medium,3650.5,2
+solar,reV Limited,large,109240.7,3
+solar,reV Limited,xlarge,871325.1,4
+solar,NLCD,tiny,3336.3,0
+solar,NLCD,small,5897.8,1
+solar,NLCD,medium,133295.2,2
+solar,NLCD,large,557709.5,3
+solar,NLCD,xlarge,2207965.9,4
+wind,NLCD pct-only,tiny,1104.3,0
+wind,NLCD pct-only,small,2176.1,1
+wind,NLCD pct-only,medium,67309.7,2
+wind,NLCD pct-only,large,471399.6,3
+wind,NLCD pct-only,xlarge,2179070.3,4
+wind,NLCD 5-layer,tiny,0.0,0
+wind,NLCD 5-layer,small,0.0,1
+wind,NLCD 5-layer,medium,22371.7,2
+wind,NLCD 5-layer,large,241988.2,3
+wind,NLCD 5-layer,xlarge,1044988.4,4
+wind,NLCD 7-layer (diagnostic),tiny,0.0,0
+wind,NLCD 7-layer (diagnostic),small,0.0,1
+wind,NLCD 7-layer (diagnostic),medium,15106.9,2
+wind,NLCD 7-layer (diagnostic),large,63450.6,3
+wind,NLCD 7-layer (diagnostic),xlarge,58820.7,4
+wind,reV Open,tiny,1332.1,0
+wind,reV Open,small,3019.0,1
+wind,reV Open,medium,114263.7,2
+wind,reV Open,large,848705.1,3
+wind,reV Open,xlarge,3446736.1,4
+wind,reV Reference (80/77),tiny,2.7,0
+wind,reV Reference (80/77),small,0.0,1
+wind,reV Reference (80/77),medium,490.2,2
+wind,reV Reference (80/77),large,82381.0,3
+wind,reV Reference (80/77),xlarge,1158092.6,4
+wind,reV Reference (115/170),tiny,0.8,0
+wind,reV Reference (115/170),small,0.0,1
+wind,reV Reference (115/170),medium,83.3,2
+wind,reV Reference (115/170),large,23044.6,3
+wind,reV Reference (115/170),xlarge,770903.1,4
+wind,reV Limited (80/77),tiny,0.0,0
+wind,reV Limited (80/77),small,0.0,1
+wind,reV Limited (80/77),medium,60.7,2
+wind,reV Limited (80/77),large,9217.5,3
+wind,reV Limited (80/77),xlarge,425457.5,4
+wind,reV Limited (115/170),tiny,0.0,0
+wind,reV Limited (115/170),small,0.0,1
+wind,reV Limited (115/170),medium,34.2,2
+wind,reV Limited (115/170),large,3369.9,3
+wind,reV Limited (115/170),xlarge,231168.4,4
