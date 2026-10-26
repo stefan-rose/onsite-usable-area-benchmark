@@ -20,3 +20,9 @@ for s in ["open","reference"]:
 # old 92 m layer for provenance
 sol=rd("full_run_open_2026_04_23/rev_full_population.csv"); w=rd("full_run_wind_open_2026_04_23/rev_full_population.csv").reindex(sol.index).fillna(0)
 print("old 92m open wind>solar:",(w>sol+1e-9).sum())
+# all scenario x turbine overlaps (added 2026-10-26 for Discussion reframe)
+for s in ["open","reference","limited"]:
+    sol=rd(f"full_run_{s}_2026_04_23/rev_full_population.csv")
+    for tag in ["bespoke_115hh_170rd_grid90_","ge_80hh_77rd_"]:
+        w=rd(f"full_run_wind_{tag}{s}_2026_04_23/rev_full_population.csv").reindex(sol.index).fillna(0)
+        R=set(sol.index[w>sol+1e-9]); print(f"overlap {s:9s} {tag[:12]:12s} {len(R&inv)} of {len(R)} ({len(R&inv)/len(R)*100:.1f}%)")
