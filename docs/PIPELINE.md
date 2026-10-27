@@ -114,10 +114,10 @@ These scripts download and flag ancillary datasets that feed script 10.
 
 - `compare_5layer_vs_rev_reference.R` — parcel-level comparison of the 5-layer NLCD wind result against reV Reference wind. Underlies the "5-layer within-envelope" claim in §4 of the paper.
 - `count_any_usable_by_scenario.py` — counts non-zero-usable-area parcels by method/scenario for the headline "Retained (%)" column in Table 2.
-- `compare_wind_open_layers.py` — read-only comparison of a new reV wind Open layer against the published one (whole-raster statistics and point-wise agreement). Usage: `pixi run python -u scripts/validation/compare_wind_open_layers.py OLD NEW OUTDIR`. Nothing in the pipeline uses its outputs.
-- `ag_inversion_rev_zero_share_2026-10-26.py` — for parcels where NLCD wind usable area exceeds NLCD solar, reports the share with zero reV wind usable area by turbine and scenario. Console output only.
-- `limited_gt_reference_2026-10-26.py` — counts parcels where reV wind Limited usable area exceeds Reference, by turbine configuration. Console output only.
-- `rev_wind_gt_solar_parcels_2026-10-26.py` — counts parcels where reV wind usable area exceeds reV solar, by scenario and turbine, and their overlap with the NLCD wind > solar set. Console output only.
+- `compare_wind_open_layers.py`: read-only comparison of a new reV wind Open layer against the published one (whole-raster statistics and point-wise agreement). Usage: `pixi run python -u scripts/validation/compare_wind_open_layers.py OLD NEW OUTDIR`. Nothing in the pipeline uses its outputs.
+- `ag_inversion_rev_zero_share_2026-10-26.py`: for parcels where NLCD wind usable area exceeds NLCD solar, reports the share with zero reV wind usable area by turbine and scenario. Console output only.
+- `limited_gt_reference_2026-10-26.py`: counts parcels where reV wind Limited usable area exceeds Reference, by turbine configuration. Console output only.
+- `rev_wind_gt_solar_parcels_2026-10-26.py`: counts parcels where reV wind usable area exceeds reV solar, by scenario and turbine, and their overlap with the NLCD wind > solar set. Console output only.
 
 ## Expected wall-clock cost
 
