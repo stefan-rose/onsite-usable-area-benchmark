@@ -17,7 +17,9 @@ in the compiled paper.)
 Data dependencies:
 - MRLC WMS: https://www.mrlc.gov/geoserver/mrlc_display/wms  (NLCD 2021 land cover)
 - reV composite exclusion rasters (EPSG:5070, 90 m) under Data/reV Exclusions/
-- Parcel geometry from parcels_conus_2026_04_23.gpkg
+- Parcel geometry: the exemplar row of PARCELS_WORKING_GPKG
+  (parcels_conus_2026_04_23.gpkg, written by script 01)
+- The NLCD WMS image is cached under intermediate/fig1_conceptual/
 - Pipeline exact values from method_comparison output CSVs.
 """
 import matplotlib.pyplot as plt
@@ -39,12 +41,21 @@ import urllib.request, urllib.parse, os
 import sys as _sys
 from pathlib import Path as _Path
 _sys.path.insert(0, str(_Path(__file__).resolve().parent))
-from _config import FIGURES, REV_SOLAR  # noqa: E402
+from _config import FIGURES, INTERMEDIATE, PARCELS_WORKING_GPKG, REV_SOLAR  # noqa: E402
 
 OUT = str(FIGURES / "fig3_conceptual_ohio.png")
 
+# Exemplar parcel and a scratch directory for the downloaded NLCD tile.
+# The scratch directory lives under intermediate/, which is gitignored.
+EXEMPLAR_LID = "02045A7E94BIP8PKTU7I4T"
+CACHE = INTERMEDIATE / "fig1_conceptual"
+CACHE.mkdir(parents=True, exist_ok=True)
+
 # --- Parcel in EPSG:5070 (same as reV) ---
-p_wgs = gpd.read_file("/tmp/fig3/parcel_A.gpkg").to_crs(4326)
+# Read only the exemplar row from the working parcel universe (script 01).
+p_wgs = gpd.read_file(PARCELS_WORKING_GPKG,
+                      where=f"PARCEL_LID = '{EXEMPLAR_LID}'").to_crs(4326)
+assert len(p_wgs) == 1, f"expected 1 exemplar parcel, found {len(p_wgs)}"
 p_5070 = p_wgs.to_crs(5070)
 b5070 = p_5070.total_bounds
 # Symmetric padding
@@ -60,7 +71,7 @@ wms_params = {
     "BBOX":f"{b5070_pad[0]},{b5070_pad[1]},{b5070_pad[2]},{b5070_pad[3]}",
     "WIDTH":"500","HEIGHT":"800","FORMAT":"image/png","TRANSPARENT":"TRUE",
 }
-nlcd_png = "/tmp/fig3/nlcd_5070.png"
+nlcd_png = str(CACHE / "nlcd_5070.png")
 # Always refresh so we're consistent
 urllib.request.urlretrieve(
     "https://www.mrlc.gov/geoserver/mrlc_display/wms?" + urllib.parse.urlencode(wms_params),

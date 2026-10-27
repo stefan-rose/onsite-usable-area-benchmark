@@ -18,7 +18,7 @@ This document lists every pipeline script in run order, its inputs, and its outp
 ### `01_build_parcel_universe.py`
 - **Purpose.** Build the 305,123-parcel CONUS manufacturing universe from the M-FIND raw parcel fabric. Applies filters (state, area, use-type) and writes the working GeoPackage that all downstream scripts consume.
 - **Inputs.** M-FIND raw parcel data (see [M-FIND Zenodo dataset](https://doi.org/10.5281/zenodo.21827821)).
-- **Outputs.** `intermediate/parcels_conus_2026_04_23.gpkg` (305,123 rows, EPSG:5070).
+- **Outputs.** `intermediate/parcels_conus_2026_04_23.gpkg` (305,123 rows, stored in EPSG:4326; downstream scripts reproject to EPSG:5070 for spatial operations).
 
 ### `02_rev_solar_composite_scenarios.py`
 - **Purpose.** reV solar usable area for the three composite scenarios (Open, Reference, Limited).
@@ -89,8 +89,8 @@ This document lists every pipeline script in run order, its inputs, and its outp
 
 ### `build_fig1_conceptual.py`
 - **Purpose.** Figure 1: side-by-side methods-conceptual figure on the Ohio exemplar parcel.
-- **Inputs.** Ohio exemplar parcel geometry; three reV solar composite rasters; NLCD 2021 raster window.
-- **Outputs.** `figures/fig3_conceptual_ohio.png` and `.pdf`. The file name keeps its earlier `fig3` prefix because the manuscript source includes it under that name.
+- **Inputs.** Ohio exemplar parcel (`PARCEL_LID` 02045A7E94BIP8PKTU7I4T), read from the script `01` parcel universe; three reV solar composite rasters; NLCD 2021 land cover from the MRLC WMS (needs network access).
+- **Outputs.** `figures/fig3_conceptual_ohio.png` and `.pdf` (the downloaded NLCD WMS tile is cached in `intermediate/fig1_conceptual/`). The file name keeps its earlier `fig3` prefix because the manuscript source includes it under that name.
 - **Run.** `pixi run fig1-conceptual`.
 
 ### `render_vegalite.py`
