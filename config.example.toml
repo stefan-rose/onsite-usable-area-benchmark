@@ -35,8 +35,8 @@ intermediate = "./intermediate"
 # outputs/ directory inside the analysis repo.
 outputs = "./outputs"
 
-# Directory for figure PDFs/PNGs written by build_fig3.py and future
-# figure-generation scripts.
+# Directory for figure PDFs/PNGs written by build_fig1_conceptual.py and
+# other figure-generation scripts.
 figures = "./figures"
 
 # -----------------------------------------------------------------------------

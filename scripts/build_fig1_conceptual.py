@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
 """
-Build Figure 3 - Conceptual comparison of NLCD land-cover-proportion
+Build Figure 1 - Conceptual comparison of NLCD land-cover-proportion
 vs reV composite-exclusion usable-area methods, using an Ohio exemplar
 parcel (PARCEL_LID 02045A7E94BIP8PKTU7I4T, 81.2 ac).
 
 Run from repo root under pixi:
-    cd Scripts/method_comparison && pixi run python ../applied_energy_paper/build_fig3.py
+    pixi run fig1-conceptual
 
-Outputs (relative to manuscript root):
-    manuscript/figures/fig3_conceptual_ohio.png
-    manuscript/figures/fig3_conceptual_ohio.pdf
+Outputs (written to the FIGURES directory from config.toml):
+    fig3_conceptual_ohio.png
+    fig3_conceptual_ohio.pdf
+(The output file name keeps its earlier "fig3" prefix because the
+manuscript source includes it under that name. It appears as Figure 1
+in the compiled paper.)
 
 Data dependencies:
 - MRLC WMS: https://www.mrlc.gov/geoserver/mrlc_display/wms  (NLCD 2021 land cover)

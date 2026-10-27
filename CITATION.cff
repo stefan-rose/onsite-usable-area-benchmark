@@ -3,7 +3,7 @@ message: "If you use this software, please cite both the associated paper and th
 title: "Onsite Usable Area Benchmark"
 abstract: >-
   Analysis pipeline and figure-generation scripts for the paper "Sizing up
-  on-site industrial energy: a parcel-level comparison of usable-area methods."
+  on-site industrial energy potential: a parcel-level comparison of usable-area methods."
   Benchmarks two parcel-level usable-area estimators — the NLCD
   land-cover-proportion method and the reV composite exclusion method — for
   ground-mount solar and land-based wind across 305,123 U.S. manufacturing
@@ -37,7 +37,7 @@ keywords:
 
 preferred-citation:
   type: article
-  title: "Sizing up on-site industrial energy: a parcel-level comparison of usable-area methods"
+  title: "Sizing up on-site industrial energy potential: a parcel-level comparison of usable-area methods"
   authors:
     - family-names: Rose
       given-names: Stefan

@@ -61,4 +61,10 @@ nlcd-wind-5layer = "Rscript scripts/08_nlcd_wind_binary_exclusions.R"
 airport-sens     = "Rscript scripts/09_airport_buffer_sensitivity.R"
 nlcd-wind-7layer = "Rscript scripts/10_rebuild_headline_3km_and_add_slope_nwi.R"
 floor-sens       = "Rscript scripts/11_parcel_area_floor_sensitivity.R"
-fig3             = "python scripts/build_fig3.py"
+wind-turbines    = "python -u scripts/12_wind_turbine_config_summaries.py"
+# Script 13 takes the published size-bin figure CSV (2026-07-31) as an argument:
+#   pixi run fig-data <published_bins.csv>
+fig-data         = "python -u scripts/13_build_manuscript_figure_data.py"
+fig1-conceptual  = "python scripts/build_fig1_conceptual.py"
+# Figures 2 and 3 (Vega-Lite) are rendered with vl-convert, which is not in
+# this environment. See docs/FIGURE_TABLE_MAP.md for the uv command.

@@ -2,7 +2,7 @@
 
 Analysis code and figure-generation scripts for:
 
-> **Sizing up on-site industrial energy: a parcel-level comparison of usable-area methods.**
+> **Sizing up on-site industrial energy potential: a parcel-level comparison of usable-area methods.**
 > Rose, S., Ramos, D. (2026). *Applied Energy* (under review).
 > Paper DOI: *forthcoming*.
 
@@ -48,7 +48,7 @@ pixi run python scripts/02_rev_solar_composite_scenarios.py
 │   └── FIGURE_TABLE_MAP.md          Manuscript figure/table → script mapping
 ├── figures/                         Vega-Lite specs, rendered PDFs, and figure data
 │   └── data/                        Aggregate CSVs behind the figures (committed)
-├── scripts/                         12 numbered pipeline scripts + fig-gen
+├── scripts/                         14 numbered pipeline scripts (00–13) + figure scripts
 │   ├── data_download/               NWI + slope tile download & flagging helpers
 │   └── validation/                  Cross-method validation scripts
 ├── outputs/                         Aggregate CSVs (not committed; reproduced locally)
@@ -73,7 +73,7 @@ All pipeline scripts load their input paths from a single `config.toml` at the r
 
 `config.toml` is gitignored, so your local paths never enter version control. The helpers read `config.example.toml` and merge `config.toml` over it. `IEDO_BASE` overrides `paths.base`. Standalone scripts under `scripts/data_download/` and `scripts/validation/` read `IEDO_BASE` directly.
 
-**Current caveat.** Scripts still write their outputs to `<base>/Scripts/method_comparison/outputs/...` rather than to the repo-local `outputs/` directory. This preserves the original inter-script dependency layout (each script reads the previous script's outputs from that same rooted location). Overriding `paths.base` propagates to all output locations consistently. A future refactor will migrate the output tree into the repo (`OUTPUTS` and `INTERMEDIATE` are already exposed in `_config` for this purpose but not yet consumed by the pipeline scripts).
+**Current caveat.** Scripts `00`–`11` still write their outputs under `<base>/Scripts/...` (for example `<base>/Scripts/method_comparison/outputs/`) rather than to the repo-local `outputs/` directory. This preserves the original inter-script dependency layout (each script reads the previous script's outputs from that same rooted location). Overriding `paths.base` propagates to all of those locations consistently. Scripts `12` and `13` already use the repo-local `outputs/` directory (`OUTPUTS` in `_config`), and script `13` also writes tracked copies of the figure data to `figures/data/`. A future refactor will migrate the remaining output tree into the repo.
 
 ## Reproducibility notes
 

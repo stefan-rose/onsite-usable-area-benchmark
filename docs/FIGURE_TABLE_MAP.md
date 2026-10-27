@@ -22,7 +22,7 @@ Each manuscript figure and table is produced by (or aggregated from) specific sc
 
 | Figure | Content | Produced by | Notes |
 |---|---|---|---|
-| 1 | Methods conceptual figure on the Ohio exemplar parcel | `scripts/build_fig3.py` | |
+| 1 | Methods conceptual figure on the Ohio exemplar parcel | `scripts/build_fig1_conceptual.py` (`pixi run fig1-conceptual`) | Writes `fig3_conceptual_ohio.{png,pdf}`; the file name is kept because the manuscript source includes it under that name. |
 | 2 | National headline usable-area totals: reV envelope and NLCD points, log scale, solar and wind | Data: `scripts/13_build_manuscript_figure_data.py` → `figures/data/fig_headline_totals.csv`. Spec: `figures/fig_headline_usable_area.vl.json` | Same values as Table 2. Diagnostic rows (reV Parcel Joined, NLCD 7-layer wind) are not plotted. Values are inlined in the spec by layer. |
 | 3 | Usable area by parcel size bin, solar and wind | Data: `scripts/13_build_manuscript_figure_data.py` → `figures/data/fig_bins.csv`. Spec: `figures/fig_bins.vl.json` | Same values as Table 3. Bar totals equal Table 2. |
 
