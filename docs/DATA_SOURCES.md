@@ -36,7 +36,7 @@ M-FIND defines the parcel identifiers (`PARCEL_LID`) used throughout this pipeli
 | Open | `composite_exclusions_open.tif` | `composite_exclusions_wind_open.tif` |
 | Reference | `composite_exclusions_reference.tif` | `composite_exclusions_wind_reference.tif` |
 | Limited | `composite_exclusions_limited.tif` | `composite_exclusions_wind_limited.tif` |
-| Parcel-fabric (revPJ) | `composite_exclusions_pj.tif` | *not produced* |
+| Parcel-fabric (revPJ) | `conus_percent_inclusion_all_parcels_fy26.tif` (FY26 release) | *not produced* |
 
 ---
 

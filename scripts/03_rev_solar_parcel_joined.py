@@ -11,7 +11,9 @@ Limited composites.
 Inputs
   - Scripts/applied_energy_paper/intermediate/parcels_conus_2026_04_23.gpkg
       (305,123 CONUS parcels; built by 01_build_parcel_universe_2026_04_23.py)
-  - Data/reV Exclusions/conus_percent_inclusion_all_parcels.tif  (nodata = 0 is invalid,
+  - Data/reV Exclusions/solar/conus_percent_inclusion_all_parcels_fy26.tif
+      (FY26 release, 90 m EPSG:5070, no NoData tag; 0 is a valid value meaning fully
+      excluded. Notes on the earlier release follow. Its nodata = 0 tag was invalid,
       but 0 is also the value for "fully excluded" in the composite rasters. In this
       raster, 0 was observed historically to mean "outside the valid extent" — we
       follow the same convention as the original 05_rev_full_run.py and treat 0
@@ -56,7 +58,7 @@ import sys as _sys
 _sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _config import BASE  # noqa: E402
 PARCEL_GPKG  = BASE / "Scripts/applied_energy_paper/intermediate/parcels_conus_2026_04_23.gpkg"
-REV_RASTER   = BASE / "Data/reV Exclusions/conus_percent_inclusion_all_parcels.tif"
+REV_RASTER   = BASE / "Data/reV Exclusions/solar/conus_percent_inclusion_all_parcels_fy26.tif"
 OUT_BASE     = BASE / "Scripts/method_comparison/outputs"
 
 # reV-PJ raster convention (per 05_rev_full_run.py):

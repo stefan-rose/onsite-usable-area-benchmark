@@ -9,7 +9,7 @@ Scenarios (Lopez et al. 2024, NLR TP-6A20-91900):
 Inputs
   - Scripts/applied_energy_paper/intermediate/parcels_conus_2026_04_23.gpkg
       (305,123 CONUS parcels; built by 01_build_parcel_universe_2026_04_23.py)
-  - Data/reV Exclusions/composite_exclusions_{open,reference,limited}.tif  (nodata=255)
+  - Data/reV Exclusions/solar/composite_exclusions_{open,reference,limited}.tif  (nodata=255)
 
 Design
   - Load the compact CONUS parcel GPKG once; process one state at a time.
@@ -56,7 +56,7 @@ import sys as _sys
 _sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _config import BASE  # noqa: E402
 PARCEL_GPKG  = BASE / "Scripts/applied_energy_paper/intermediate/parcels_conus_2026_04_23.gpkg"
-REV_DIR      = BASE / "Data/reV Exclusions"
+REV_DIR      = BASE / "Data/reV Exclusions/solar"
 OUT_BASE     = BASE / "Scripts/method_comparison/outputs"
 
 SCENARIOS = {

@@ -68,11 +68,12 @@ working_gpkg = "Scripts/applied_energy_paper/intermediate/parcels_conus_2026_04_
 
 [inputs.rev_solar]
 # All paths relative to paths.base.
-open      = "Data/reV Exclusions/composite_exclusions_open.tif"
-reference = "Data/reV Exclusions/composite_exclusions_reference.tif"
-limited   = "Data/reV Exclusions/composite_exclusions_limited.tif"
+open      = "Data/reV Exclusions/solar/composite_exclusions_open.tif"
+reference = "Data/reV Exclusions/solar/composite_exclusions_reference.tif"
+limited   = "Data/reV Exclusions/solar/composite_exclusions_limited.tif"
 # revPJ variant (parcel-fabric joined; solar only, diagnostic):
-parcel_joined = "Data/reV Exclusions/conus_percent_inclusion_all_parcels.tif"
+# FY26 release (md5 992fb9e81d9a5fffca67247e09fc3eef); no NoData tag, 0 = fully excluded.
+parcel_joined = "Data/reV Exclusions/solar/conus_percent_inclusion_all_parcels_fy26.tif"
 
 [inputs.rev_wind]
 # 115 m hub height, 170 m rotor diameter. All relative to paths.base.
