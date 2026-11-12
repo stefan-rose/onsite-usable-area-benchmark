@@ -33,12 +33,6 @@
     ],
     "related_identifiers": [
       {
-        "identifier": "TODO-paper-DOI",
-        "relation": "isSupplementTo",
-        "resource_type": "publication-article",
-        "scheme": "doi"
-      },
-      {
         "identifier": "https://github.com/stefan-rose/onsite-usable-area-benchmark",
         "relation": "isCompiledBy",
         "resource_type": "software",

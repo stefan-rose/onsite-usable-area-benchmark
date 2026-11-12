@@ -8,8 +8,14 @@ Blocking items:
       keyed to M-FIND obs_id, with no parcel IDs and no geometry. Confirm
       that revPJ aggregates are allowed. Per-parcel revPJ stays out
       (`--include-revpj` stays off) unless the DUA allows it.
-- [ ] PNNL/NLR release clearance.
-- [ ] Paper DOI: README, CODEBOOK header, `TODO-paper-DOI`.
+- [ ] PNNL clearance (Stefan is requesting it). Send the outputs/zenodo_release/v1.0/ contents.
+- [ ] NLR sign-off if needed: the release includes reV-derived values and revPJ aggregates.
+- [ ] Sequence: upload BEFORE paper submission. Steps:
+      - after clearance, reserve the Zenodo DOI;
+      - cite it in the manuscript Data Availability;
+      - publish.
+      The paper DOI is NOT needed to upload. Add it after publication with a metadata-only edit
+      (related identifier `isSupplementTo`, plus README/CODEBOOK text) or as v1.1.
 - [ ] Code release DOI (tag + Zenodo GitHub integration): README, CODEBOOK, `TODO-code-DOI`.
 - [ ] OEDI wind submission URL/DOI: README, CODEBOOK, `TODO-OEDI-wind-URL-or-DOI`.
 - [ ] OEDI 8319: confirm the 90 m solar composites (Open/Reference/Limited) are
