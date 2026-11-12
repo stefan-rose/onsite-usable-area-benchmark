@@ -1,0 +1,86 @@
+{
+  "metadata": {
+    "upload_type": "dataset",
+    "title": "Parcel-level usable area for on-site solar and wind at U.S. manufacturing parcels: NLCD and reV benchmark",
+    "version": "1.0",
+    "publication_date": "TODO-YYYY-MM-DD",
+    "creators": [
+      {
+        "name": "Rose, Stefan",
+        "affiliation": "Pacific Northwest National Laboratory",
+        "orcid": "0009-0007-3707-9786"
+      },
+      {
+        "name": "Ramos, Dakota",
+        "affiliation": "National Laboratory of the Rockies",
+        "orcid": "0000-0003-1258-7681"
+      }
+    ],
+    "description": "<p>Parcel-level estimates of usable land area for ground-mount solar PV and land-based wind at 305,123 manufacturing parcels in the contiguous United States. These parcels host 338,904 facilities in M-FIND v1.1. The dataset compares the NLCD land-cover-proportion method with the NLR reV composite exclusion method: Open, Reference and Limited scenarios, with five wind turbine configurations. It also includes NLCD 2021 class areas, binary wind exclusion flags, a forest-availability sensitivity for solar and reV QA flags.</p><p>Parcel polygons are licensed from LightBox and are not redistributed. Rows are keyed to public M-FIND v1.1 obs_id values. Results for the parcel-fabric-based reV Parcel Joined layer are given as size-bin and state aggregates only.</p><p>This dataset accompanies Rose and Ramos, &quot;Sizing up on-site industrial energy potential: a parcel-level comparison of usable-area methods&quot; (Applied Energy, under review). See README.md and CODEBOOK.txt.</p>",
+    "access_right": "open",
+    "license": "cc-by-4.0",
+    "keywords": [
+      "on-site energy",
+      "technical potential",
+      "land availability",
+      "solar PV",
+      "land-based wind",
+      "manufacturing",
+      "parcels",
+      "reV",
+      "NLCD",
+      "M-FIND"
+    ],
+    "related_identifiers": [
+      {
+        "identifier": "TODO-paper-DOI",
+        "relation": "isSupplementTo",
+        "resource_type": "publication-article",
+        "scheme": "doi"
+      },
+      {
+        "identifier": "https://github.com/stefan-rose/onsite-usable-area-benchmark",
+        "relation": "isCompiledBy",
+        "resource_type": "software",
+        "scheme": "url"
+      },
+      {
+        "identifier": "TODO-code-DOI",
+        "relation": "isCompiledBy",
+        "resource_type": "software",
+        "scheme": "doi"
+      },
+      {
+        "identifier": "10.5281/zenodo.21827821",
+        "relation": "isDerivedFrom",
+        "resource_type": "dataset",
+        "scheme": "doi"
+      },
+      {
+        "identifier": "10.5066/P9JZ7AO3",
+        "relation": "isDerivedFrom",
+        "resource_type": "dataset",
+        "scheme": "doi"
+      },
+      {
+        "identifier": "https://data.openei.org/submissions/8319",
+        "relation": "isDerivedFrom",
+        "resource_type": "dataset",
+        "scheme": "url"
+      },
+      {
+        "identifier": "TODO-OEDI-wind-URL-or-DOI",
+        "relation": "isDerivedFrom",
+        "resource_type": "dataset",
+        "scheme": "url"
+      },
+      {
+        "identifier": "10.2172/2500362",
+        "relation": "references",
+        "resource_type": "publication-report",
+        "scheme": "doi"
+      }
+    ],
+    "notes": "Funding: U.S. Department of Energy, Office of Critical Minerals and Energy Innovation, Industrial Technologies Office. PNNL is operated by Battelle Memorial Institute for DOE under Contract No. DE-AC05-76RL01830; NLR under Contract No. DE-AC36-08GO28308."
+  }
+}

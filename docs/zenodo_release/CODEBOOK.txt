@@ -1,0 +1,301 @@
+CODEBOOK — Parcel-level usable area for on-site solar and wind at U.S.
+manufacturing parcels: NLCD and reV benchmark (version 1.0)
+==========================================================================
+
+Files:   onsite_usable_area_parcels_v1.0.csv    (one row per parcel)
+         summary_by_size_bin_v1.0.csv           (national totals by size bin)
+         summary_by_state_v1.0.csv              (totals by state)
+Records: 305,123 parcels (the CONUS manufacturing parcel universe of the
+         accompanying paper), covering 338,904 M-FIND v1.1 facilities
+Format:  UTF-8, comma-delimited, header row. Booleans are True/False.
+         Missing values are empty fields.
+Units:   Areas in acres (1 acre = 4,046.8564224 m2), rounded to 4 decimals
+         (about 0.4 m2). Areas were computed in EPSG:5070 (NAD83 / Conus
+         Albers, equal-area).
+Paper:   Rose, S., Ramos, D. Sizing up on-site industrial energy potential:
+         a parcel-level comparison of usable-area methods. Applied Energy
+         (under review). TODO: add the DOI after publication.
+Code:    https://github.com/stefan-rose/onsite-usable-area-benchmark
+         TODO: add the Zenodo DOI of the tagged code release.
+         Script scripts/14_build_zenodo_release.py builds these files.
+
+
+OVERVIEW
+--------
+This dataset gives parcel-level estimates of the land area usable for
+ground-mount solar PV and land-based wind at U.S. manufacturing parcels in
+the contiguous United States (CONUS). It compares two estimators:
+
+  1. The NLCD land-cover-proportion method. Usable area is the sum over
+     NLCD 2021 classes of the class area in the parcel times a
+     class-specific availability percentage.
+  2. The reV composite exclusion method. Usable area is the parcel area
+     times the mean inclusion fraction of the NLR reV composite exclusion
+     raster cells whose centres fall inside the parcel. Three siting
+     scenarios are given (Open, Reference, Limited). Wind is given for up
+     to five turbine configurations.
+
+The parcel universe is built from M-FIND, the Manufacturing Facility
+Inventory National Dataset, version 1.1 (doi:10.5281/zenodo.21827821).
+One parcel can host several M-FIND facilities. Rows are parcels, not
+facilities.
+
+Parcel boundaries come from LightBox SmartParcels (licensed) and are NOT
+redistributed. The licensed LightBox parcel identifier is not included.
+Rows are keyed to public M-FIND v1.1 obs_id values instead. The file holds
+no coordinates. Join to M-FIND on obs_id for facility location and NAICS
+attributes.
+
+
+IDENTIFIERS AND PARCEL ATTRIBUTES
+---------------------------------
+
+ 1. primary_obs_id            [string, 10 characters]
+    Primary key. The alphabetically first M-FIND v1.1 obs_id among the
+    facilities on this parcel. The choice of the first ID is arbitrary.
+    It has no meaning beyond giving each parcel a stable key.
+
+ 2. mfind_obs_ids             [string]
+    All M-FIND v1.1 obs_ids on this parcel, sorted and separated by
+    semicolons (e.g. 0a1b2c3d4e;9z8y7x6w5v). Each obs_id appears in
+    exactly one row. To get facility-level rows, split on ";" and join to
+    M-FIND on obs_id.
+
+ 3. n_mfind_facilities        [integer]
+    Number of M-FIND v1.1 facilities on the parcel. Ranges from 1 to 42.
+    27,274 parcels host more than one facility.
+
+ 4. mfind_colocation_group_id [integer]
+    The M-FIND v1.1 colocation_group_id shared by the facilities on this
+    parcel. It is empty when the parcel hosts one facility. M-FIND
+    assigns these IDs per release, so they are valid against v1.1 only.
+    Use obs_id for joins to other M-FIND versions.
+
+ 5. county_fips               [string, 5 digits]
+    County FIPS code (state + county) of the primary facility, from
+    M-FIND FIPS_CODE, zero-padded. Read it as text to keep leading zeros.
+
+ 6. state                     [string, 2 letters]
+    USPS code of the state batch the parcel was processed in. This is the
+    state used for state results in the paper. It matches the state
+    prefix of county_fips for all but two parcels on State Line Road
+    (one on the NY/NJ line, one on the MO/KS line). M-FIND STATE is blank
+    for about 18,700 of the primary facilities, so it is not used.
+
+ 7. parcel_acres              [numeric, acres]
+    Parcel area: M-FIND PARCEL_AREA_SQFT / 43,560. All usable-area
+    values below are fractions of this area.
+
+ 8. size_bin                  [string]
+    Parcel-size class. Each bin includes its lower bound and excludes its
+    upper bound:
+      tiny    < 0.5 ac          (58,272 parcels)
+      small   0.5 to < 1 ac     (35,160)
+      medium  1 to < 10 ac      (142,875)
+      large   10 to < 100 ac    (57,129)
+      xlarge  >= 100 ac         (11,687)
+
+
+NLCD LAND-COVER COMPOSITION
+---------------------------
+Source: NLCD 2021 Land Cover (Dewitz 2023, doi:10.5066/P9JZ7AO3), 30 m.
+Class areas are fractional zonal sums computed in Google Earth Engine.
+These columns let users re-run the NLCD method with their own
+availability percentages.
+
+ 9–24. nlcd_CC_ac             [numeric, acres]
+    Area of NLCD class CC within the parcel, for the 16 CONUS classes:
+      11 Open Water                    41 Deciduous Forest
+      12 Perennial Ice/Snow            42 Evergreen Forest
+      21 Developed, Open Space         43 Mixed Forest
+      22 Developed, Low Intensity      52 Shrub/Scrub
+      23 Developed, Medium Intensity   71 Grassland/Herbaceous
+      24 Developed, High Intensity     81 Pasture/Hay
+      31 Barren Land                   82 Cultivated Crops
+                                       90 Woody Wetlands
+                                       95 Emergent Herbaceous Wetlands
+
+25. nlcd_coverage_ratio       [numeric, ratio]
+    Sum of the NLCD class areas divided by the parcel area. It is close
+    to 1 for most parcels. Values above 1 arise from fractional cell
+    weighting at parcel edges. For this reason solar_nlcd_ac exceeds
+    parcel_acres on 2 parcels and wind_nlcd_pct_only_ac on 1.
+
+26. qa_nlcd_no_value          [boolean]
+    True if the parcel had no NLCD return because of an invalid source
+    geometry (3 parcels). Its NLCD class areas and NLCD usable areas
+    are 0.
+
+
+SOLAR USABLE AREA
+-----------------
+
+27. solar_nlcd_ac             [numeric, acres]
+    NLCD-method solar usable area at the baseline availability
+    percentages (paper Table 1):
+      Barren 80; Shrub/Scrub 70; Grassland 70; Pasture/Hay 60;
+      Cultivated Crops 60; Developed Open Space 30; Developed Low 30;
+      Developed Medium 20; Developed High 20; Deciduous Forest 10;
+      Mixed Forest 15; Evergreen Forest 5; Open Water 0;
+      Perennial Ice/Snow 0; Woody and Emergent Wetlands 0  (percent).
+
+28–31. Forest-availability sensitivity (NLCD solar). These match
+    solar_nlcd_ac except for the three forest classes (41 deciduous /
+    42 evergreen / 43 mixed):
+    solar_nlcd_forest_zero_ac        0 / 0 / 0 %
+    solar_nlcd_forest_uniform10_ac  10 / 10 / 10 %
+    solar_nlcd_forest_uniform50_ac  50 / 50 / 50 %  (empirical upper
+                                     bound from Virginia DEQ project
+                                     footprints; not a normative value)
+    solar_nlcd_forest_doubled_ac    20 / 10 / 30 %  (2x baseline)
+    The baseline (10 / 5 / 15 %) is solar_nlcd_ac.
+
+42. solar_rev_open_ac         [numeric, acres]
+43. solar_rev_reference_ac    [numeric, acres]
+44. solar_rev_limited_ac      [numeric, acres]
+    reV-method solar usable area under the NLR 2024 supply-curve Open,
+    Reference and Limited siting scenarios (Lopez et al. 2025,
+    doi:10.2172/2500362). Computed from the 90 m solar composite
+    exclusion rasters released on OEDI (submission 8319,
+    https://data.openei.org/submissions/8319).
+    TODO: update the OEDI file names and DOI once NLR posts the 90 m
+    composites (planned to replace the 92.11 m files now listed).
+
+    reV Parcel Joined (revPJ) is NOT included per parcel. Its raster is
+    built on the licensed LightBox parcel fabric. Totals by size bin and
+    by state are in the summary files (column
+    solar_rev_parcel_joined_ac).
+
+
+WIND USABLE AREA
+----------------
+
+32. wind_nlcd_pct_only_ac     [numeric, acres]
+    NLCD-method wind usable area at the baseline wind availability
+    percentages (paper Table 1):
+      Barren 80; Shrub/Scrub 70; Grassland 70; Pasture/Hay 70;
+      Cultivated Crops 70; Developed Open Space 20; Developed Low 10;
+      Developed Medium 5; Developed High 5; Deciduous Forest 10;
+      Mixed Forest 10; Evergreen Forest 5; Water, Ice/Snow, Wetlands 0
+      (percent).
+
+33–39. Binary parcel exclusion flags for the NLCD wind method
+    [boolean; True = parcel meets the exclusion condition]
+    flag_lt_1ac                  parcel_acres < 1                (93,432)
+    flag_urban                   intersects a TIGER/Line 2023
+                                 Urban Area polygon (UACE20)     (229,624)
+    flag_dod_sua                 intersects FAA Special Use
+                                 Airspace flagged DoD restricted (13,122)
+    flag_usfws_critical_habitat  intersects a USFWS Critical
+                                 Habitat polygon                 (4,083)
+    flag_airport_3km             within 3 km of an FAA airport
+                                 facility centroid               (131,561)
+    flag_slope_gt25              any overlapping 3DEP 1-arc-second
+                                 cell with slope >= 25 %         (11,852)
+    flag_nwi                     intersects a USFWS National
+                                 Wetlands Inventory polygon      (71,513)
+
+40. wind_nlcd_5layer_ac       [numeric, acres]
+    wind_nlcd_pct_only_ac, set to 0 if any of the first five flags
+    (lt_1ac, urban, dod_sua, usfws_critical_habitat, airport_3km) is
+    True. This is the headline NLCD wind estimate.
+
+41. wind_nlcd_7layer_ac       [numeric, acres]
+    wind_nlcd_pct_only_ac, set to 0 if any of the seven flags is True.
+    Diagnostic only. See the paper's NWI coverage-fraction diagnostic.
+
+45–52. reV-method wind usable area [numeric, acres]
+    Computed from NLR reV wind composite exclusion rasters on a common
+    90 m grid (2024 supply-curve edition). Turbines are given as hub
+    height (hh, m) / rotor diameter (rd, m):
+    wind_rev_open_ac                    Open (no turbine-specific
+                                        setback; common to all turbines)
+    wind_rev_reference_hh115_rd170_ac   Reference, 115/170 (utility scale)
+    wind_rev_limited_hh115_rd170_ac     Limited,   115/170
+    wind_rev_reference_hh80_rd77_ac     Reference, 80/77 (1.5 MW class)
+    wind_rev_limited_hh80_rd77_ac       Limited,   80/77
+    wind_rev_reference_hh60_rd47_ac     Reference, 60/47
+    wind_rev_reference_hh37_rd20p7_ac   Reference, 37/20.7
+    wind_rev_reference_hh24_rd9p6_ac    Reference, 24/9.6
+    The 115/170 layers were regridded by NLR from their native ~92.1 m
+    grid. NLR produced the other configurations for this study.
+    TODO: add the OEDI wind submission URL/DOI once NLR publishes it.
+
+
+reV QUALITY-ASSURANCE FLAGS
+---------------------------
+reV usable area = parcel_acres x mean inclusion fraction of the cells
+whose centres fall inside the parcel. QA flags are identical across
+scenarios on the same grid, so one set is given per technology.
+
+53. qa_rev_solar_centroid_fallback  [boolean]
+55. qa_rev_wind_centroid_fallback   [boolean]
+    True if the inclusion fraction was taken from the single cell that
+    contains the parcel centroid. This applies to all parcels under
+    1 acre and to any larger parcel with no cell centre inside it.
+
+54. qa_rev_solar_low_pixel_count    [boolean]
+56. qa_rev_wind_low_pixel_count     [boolean]
+    True if fewer than 3 cell centres fall inside the parcel
+    (centroid-fallback parcels are also True). Estimates for these
+    parcels rest on very few 90 m cells.
+
+No parcel lacked a reV value (flag_rev_no_value was 0 everywhere and is
+omitted).
+
+
+SUMMARY FILES
+-------------
+summary_by_size_bin_v1.0.csv and summary_by_state_v1.0.csv
+    column     usable-area column name (as above), plus
+               solar_rev_parcel_joined_ac (reV Parcel Joined, FY26 NLR
+               raster; aggregates only)
+    size_bin / state   grouping value
+    usable_ac  sum of usable area, acres, rounded to 0.1
+    n_parcels  parcels in the group
+    n_nonzero  parcels with usable area > 0
+The national totals and size-bin totals match the paper's figure data
+(figures/data/fig_headline_totals.csv and fig_bins.csv in the code
+repository). The release script checks this match.
+
+
+NOTES ON DATA HANDLING
+----------------------
+- Read county_fips and primary_obs_id as text, e.g.
+  pd.read_csv(f, dtype={"county_fips": str, "primary_obs_id": str}).
+- Facility-level use. Usable area belongs to the parcel. Do not sum it
+  over facilities from M-FIND; that double-counts shared parcels. To
+  attach parcel values to facilities, split mfind_obs_ids and copy the
+  parcel value to each facility.
+- Technical potential only. Values are land-availability estimates. They
+  do not account for resource quality, interconnection, ownership,
+  operations on the site, or developer intent.
+- M-FIND v1.1 contains 87 CONUS facility records that are not in this
+  parcel universe. The universe was fixed on 2026-04-23, before those
+  records were added. See paper Section 2.1.
+  TODO: reconcile with the paper footnote, which says 85 records (84
+  parcels) were added after the analysis.
+
+
+PROVENANCE SUMMARY
+------------------
+  Input                                   Use
+  --------------------------------------  ------------------------------
+  M-FIND v1.1 (doi:10.5281/zenodo.21827821) facility IDs, parcel area,
+                                          county FIPS
+  LightBox SmartParcels (licensed)        parcel polygons; NOT
+                                          redistributed
+  NLCD 2021 (doi:10.5066/P9JZ7AO3)        NLCD class areas
+  NLR reV 2024 composite exclusions       reV usable area
+    (Lopez et al. 2025, doi:10.2172/2500362;
+     OEDI 8319 for solar; wind TODO)
+  TIGER/Line 2023 Urban Areas             flag_urban
+  FAA Special Use Airspace                flag_dod_sua
+  FAA airport facilities                  flag_airport_3km
+  USFWS Critical Habitat                  flag_usfws_critical_habitat
+  USFWS National Wetlands Inventory       flag_nwi
+  USGS 3DEP 1-arc-second DEM              flag_slope_gt25
+  TODO: add release versions and access dates for the federal layers
+  once they are fixed in paper Section 2.
+
+License: CC BY 4.0.
