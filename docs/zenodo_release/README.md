@@ -52,7 +52,7 @@ The reV Parcel Joined layer is built on the LightBox parcel fabric. Its results 
 
 ## Reproducibility
 
-The analysis code is at <https://github.com/stefan-rose/onsite-usable-area-benchmark>. <!-- TODO: add the Zenodo DOI of the tagged code release. -->
+The analysis code is at <https://github.com/stefan-rose/onsite-usable-area-benchmark>, release v1.0.0. <!-- TODO: confirm the tag name and add its commit hash once the tag is created. -->
 
 `scripts/14_build_zenodo_release.py` builds these files from the pipeline outputs and runs a set of checks:
 

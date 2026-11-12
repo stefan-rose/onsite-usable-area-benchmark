@@ -4,10 +4,8 @@ The `TODO-*` strings in `zenodo_metadata.json` are deliberately invalid so a
 Zenodo API upload fails until each is filled in or removed.
 
 Blocking items:
-- [ ] LightBox DUA check. Confirm that LightBox permits per-parcel derived values
-      keyed to M-FIND obs_id, with no parcel IDs and no geometry. Confirm
-      that revPJ aggregates are allowed. Per-parcel revPJ stays out
-      (`--include-revpj` stays off) unless the DUA allows it.
+- [x] LightBox DUA (confirmed by Stefan, 2026-11-12). Results without geometry can be reported,
+      and this extends to summarized revPJ totals. Per-parcel revPJ stays out (`--include-revpj` off).
 - [ ] PNNL clearance (Stefan is requesting it). Send the outputs/zenodo_release/v1.0/ contents.
 - [ ] NLR sign-off if needed: the release includes reV-derived values and revPJ aggregates.
 - [ ] Sequence: upload BEFORE paper submission. Steps:
@@ -16,7 +14,13 @@ Blocking items:
       - publish.
       The paper DOI is NOT needed to upload. Add it after publication with a metadata-only edit
       (related identifier `isSupplementTo`, plus README/CODEBOOK text) or as v1.1.
-- [ ] Code release DOI (tag + Zenodo GitHub integration): README, CODEBOOK, `TODO-code-DOI`.
+- [ ] Code citation is the GitHub repo; no code DOI (decided 2026-11-12). Steps:
+      - push the local commits;
+      - create tag v1.0.0 and bump CITATION.cff (version/date);
+      - add the commit hash to README/CODEBOOK;
+      - the metadata already points to /tree/v1.0.0.
+      Optional: attach `git archive v1.0.0` as a zip to this Zenodo record, so the code is
+      also preserved under the dataset DOI.
 - [ ] OEDI wind submission URL/DOI: README, CODEBOOK, `TODO-OEDI-wind-URL-or-DOI`.
 - [ ] OEDI 8319: confirm the 90 m solar composites (Open/Reference/Limited) are
       posted. If NLR mints a DOI, switch the 8319 identifier to it.

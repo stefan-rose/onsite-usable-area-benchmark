@@ -33,16 +33,10 @@
     ],
     "related_identifiers": [
       {
-        "identifier": "https://github.com/stefan-rose/onsite-usable-area-benchmark",
+        "identifier": "https://github.com/stefan-rose/onsite-usable-area-benchmark/tree/v1.0.0",
         "relation": "isCompiledBy",
         "resource_type": "software",
         "scheme": "url"
-      },
-      {
-        "identifier": "TODO-code-DOI",
-        "relation": "isCompiledBy",
-        "resource_type": "software",
-        "scheme": "doi"
       },
       {
         "identifier": "10.5281/zenodo.21827821",

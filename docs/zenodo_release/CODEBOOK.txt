@@ -16,7 +16,7 @@ Paper:   Rose, S., Ramos, D. Sizing up on-site industrial energy potential:
          a parcel-level comparison of usable-area methods. Applied Energy
          (under review). TODO: add the DOI after publication.
 Code:    https://github.com/stefan-rose/onsite-usable-area-benchmark
-         TODO: add the Zenodo DOI of the tagged code release.
+         Release v1.0.0. TODO: confirm the tag and add its commit hash.
          Script scripts/14_build_zenodo_release.py builds these files.
 
 
