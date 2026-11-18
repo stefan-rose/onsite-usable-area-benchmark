@@ -76,8 +76,8 @@ INPUTS
     doi:10.2172/2500362):
       solar: OEDI submission 8319,
              https://data.openei.org/submissions/8319;
-      wind:  wind composite exclusions provided by NLR; public release
-             on OEDI pending.
+      wind:  OEDI submission 11697,
+             https://data.openei.org/submissions/11697.
   - TIGER/Line 2023 Urban Areas, FAA Special Use Airspace, FAA airport
     facilities, USFWS Critical Habitat, USFWS National Wetlands
     Inventory, USGS 3DEP.

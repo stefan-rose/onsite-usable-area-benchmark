@@ -57,7 +57,7 @@
         "scheme": "url"
       },
       {
-        "identifier": "TODO-OEDI-wind-URL-or-DOI",
+        "identifier": "https://data.openei.org/submissions/11697",
         "relation": "isDerivedFrom",
         "resource_type": "dataset",
         "scheme": "url"

@@ -94,6 +94,9 @@ limited   = "Data/reV Exclusions/Wind/lbw_limited_115hh_170rd.tif"
 # layer. The 90 m generic Open (wind_open_exclusions.tif) matches the published
 # ~92.1 m lbw_open to 1.000004 in included area (scripts/validation/
 # compare_wind_open_layers.py).
+# Public copies of all eight 90 m wind rasters: OEDI submission 11697
+# (https://data.openei.org/submissions/11697), named lbw_<scenario>_exclusions*.tif.
+# They are pixel-identical to the files below; see docs/DATA_SOURCES.md.
 # TODO (on NLR delivery): replace the limited placeholder filenames below
 # with the delivered names and record their md5 in the run log.
 [inputs.rev_wind_turbines.ge_80hh_77rd]

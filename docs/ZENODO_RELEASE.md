@@ -61,9 +61,10 @@ A full rebuild needs inputs that cannot be redistributed:
   licensed parcel key.
 
 The public inputs are listed in [`DATA_SOURCES.md`](DATA_SOURCES.md): M-FIND
-v1.1, NLCD 2021 (extracted with Google Earth Engine), the NLR reV 2024 solar
-and wind composite exclusion rasters, and the federal layers used for the
-binary wind flags.
+v1.1, NLCD 2021 (extracted with Google Earth Engine), the NLR reV 2024
+composite exclusion rasters (solar: [OEDI 8319](https://data.openei.org/submissions/8319);
+wind: [OEDI 11697](https://data.openei.org/submissions/11697)), and the federal
+layers used for the binary wind flags.
 
 With those inputs in place, set up the paths as described in the main
 [README](../README.md#path-configuration), then run the scripts below in

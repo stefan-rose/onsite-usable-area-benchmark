@@ -33,10 +33,12 @@ M-FIND defines the parcel identifiers (`PARCEL_LID`) used throughout this pipeli
 
 | Scenario | Solar | Wind |
 |---|---|---|
-| Open | `composite_exclusions_open.tif` | `composite_exclusions_wind_open.tif` |
-| Reference | `composite_exclusions_reference.tif` | `composite_exclusions_wind_reference.tif` |
-| Limited | `composite_exclusions_limited.tif` | `composite_exclusions_wind_limited.tif` |
+| Open | `composite_exclusions_open.tif` | `lbw_open_exclusions.tif` (one layer for all turbines) |
+| Reference | `composite_exclusions_reference.tif` | `lbw_reference_exclusions_<hh>hh_<rd>rd.tif` for 115/170, 80/77, 60/47, 37/21, 24/10 |
+| Limited | `composite_exclusions_limited.tif` | `lbw_limited_exclusions_<hh>hh_<rd>rd.tif` for 115/170, 80/77 |
 | Parcel-fabric (revPJ) | `conus_percent_inclusion_all_parcels_fy26.tif` (FY26 release) | *not produced* |
+
+**Wind public release:** all eight 90 m wind rasters are on OEDI, submission 11697: Ramos, D., and NLR Geospatial Data Science (2026), *CONUS Land-based Wind Composite Siting Exclusion TIFFs 2024: reV Open, Reference, and Limited Siting Scenarios*, <https://data.openei.org/submissions/11697>. Single-band float32, 90 m, ESRI:102008, nodata 255. The OEDI files have the same pixels, grid and nodata as the files named in `config.example.toml` (all eight compared on 2026-11-18); only the descriptive metadata tags differ. Download them and point the `[inputs.rev_wind*]` paths in `config.toml` at them.
 
 ---
 

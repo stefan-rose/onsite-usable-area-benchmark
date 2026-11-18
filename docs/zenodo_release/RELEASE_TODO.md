@@ -22,7 +22,11 @@ Blocking items:
         (otherwise the links in README.txt/CODEBOOK.txt 404).
       Note: main can change after upload; the Zenodo files then describe an earlier state of
       the code. Optional: attach a `git archive` zip of the uploaded commit to the record.
-- [ ] OEDI wind submission URL/DOI: README, CODEBOOK, `TODO-OEDI-wind-URL-or-DOI`.
+- [x] OEDI wind release live: submission 11697 (no DOI), 2026-11-18. In README.txt, CODEBOOK,
+      metadata, DATA_SOURCES.md, ZENODO_RELEASE.md, manuscript. All 8 OEDI files are
+      pixel-identical to the rasters used (CRS, transform, nodata also equal). Add the
+      11697 URL as an isDerivedFrom related identifier on the Zenodo draft and re-upload
+      README.txt, CODEBOOK.txt, MD5SUMS.txt.
 - [ ] OEDI 8319: confirm the 90 m solar composites (Open/Reference/Limited) are
       posted. If NLR mints a DOI, switch the 8319 identifier to it.
 - [ ] Reconcile the M-FIND v1.1 count: 87 CONUS obs_ids are not in the universe,
@@ -46,7 +50,6 @@ specifics below when they become available, then rebuild with script 14 (MD5SUMS
 | Where | Current public wording | Fill in when available |
 |---|---|---|
 | README "This dataset accompanies..." (para 2); CODEBOOK header `Paper:` | "Applied Energy (under review)" | Paper DOI after publication (metadata-only edit or v1.1) |
-| README "Inputs" wind bullet; CODEBOOK vars 45-52 note; CODEBOOK provenance | "public release on OEDI pending" | OEDI wind submission URL/DOI |
 | CODEBOOK vars 42-44 (solar reV) | cites OEDI 8319 only | Update OEDI file names/DOI once the 90 m composites replace the 92.11 m files |
 | CODEBOOK handling notes, M-FIND count | "87 CONUS facility records that are not in this parcel universe" | Reconcile with paper footnote (85 records / 84 parcels); public text and paper currently disagree |
 | CODEBOOK provenance summary | federal layers listed without versions | Add release versions and access dates once fixed in paper Section 2 |

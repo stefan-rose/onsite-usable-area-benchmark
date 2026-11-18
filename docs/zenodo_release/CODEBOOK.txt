@@ -217,7 +217,10 @@ WIND USABLE AREA
     wind_rev_reference_hh24_rd9p6_ac    Reference, 24/9.6
     The 115/170 layers were regridded by NLR from their native ~92.1 m
     grid. NLR produced the other configurations for this study.
-    Public release of the wind layers on OEDI is pending.
+    All eight wind rasters are released on OEDI, submission 11697
+    (https://data.openei.org/submissions/11697), as
+    lbw_open_exclusions.tif, lbw_reference_exclusions_<hh>hh_<rd>rd.tif
+    and lbw_limited_exclusions_<hh>hh_<rd>rd.tif.
 
 
 reV QUALITY-ASSURANCE FLAGS
@@ -284,7 +287,7 @@ PROVENANCE SUMMARY
   NLCD 2021 (doi:10.5066/P9JZ7AO3)        NLCD class areas
   NLR reV 2024 composite exclusions       reV usable area
     (Lopez et al. 2025, doi:10.2172/2500362;
-     OEDI 8319 for solar; wind release pending)
+     OEDI 8319 for solar; OEDI 11697 for wind)
   TIGER/Line 2023 Urban Areas             flag_urban
   FAA Special Use Airspace                flag_dod_sua
   FAA airport facilities                  flag_airport_3km
