@@ -45,6 +45,7 @@ pixi run python scripts/02_rev_solar_composite_scenarios.py
 ├── docs/
 │   ├── PIPELINE.md                  Script run order + expected outputs
 │   ├── DATA_SOURCES.md              Every input dataset with DOI/URL
+│   ├── ZENODO_RELEASE.md            How the Zenodo dataset files are built and checked
 │   └── FIGURE_TABLE_MAP.md          Manuscript figure/table → script mapping
 ├── figures/                         Vega-Lite specs, rendered PDFs, and figure data
 │   └── data/                        Aggregate CSVs behind the figures (committed)
@@ -63,6 +64,10 @@ Underlying data are **not redistributed in this repository**. See [`docs/DATA_SO
 - **reV composite exclusion rasters** — released by NLR; see DATA_SOURCES.md for the current supply-curve release.
 - **NLCD 2021** — public, U.S. Geological Survey / MRLC.
 - **NWI wetlands, slope (SRTM/3DEP), airport buffers, DoD restricted airspace, USFWS Critical Habitat, urban areas** — all public federal or state datasets; sources listed individually.
+
+## Zenodo dataset release
+
+The parcel-level results are published as a Zenodo dataset, [doi:10.5281/zenodo.24354306](https://doi.org/10.5281/zenodo.24354306) (305,123 parcels, keyed to M-FIND v1.1 facility identifiers). [`docs/ZENODO_RELEASE.md`](docs/ZENODO_RELEASE.md) explains how to check the downloaded files against the paper (`pixi run verify-zenodo <folder>`, no licensed data needed) and how to rebuild them with `scripts/14_build_zenodo_release.py`.
 
 ## Path configuration
 

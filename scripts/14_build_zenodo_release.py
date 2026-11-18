@@ -319,13 +319,13 @@ def main() -> None:
     # ---------------- write ----------------
     data_csv = out / f"onsite_usable_area_parcels_v{v}.csv"
     d.to_csv(data_csv, index=False)
-    for name in ["README.md", "CODEBOOK.txt", "zenodo_metadata.json"]:
+    for name in ["README.txt", "CODEBOOK.txt", "zenodo_metadata.json"]:
         src = DOCS / name
         if src.exists():
             shutil.copy2(src, out / name)
     data_files = [data_csv, out / f"summary_by_size_bin_v{v}.csv", out / f"summary_by_state_v{v}.csv"]
     with open(out / "MD5SUMS.txt", "w") as f:
-        for p in data_files + [out / n for n in ["README.md", "CODEBOOK.txt"] if (out / n).exists()]:
+        for p in data_files + [out / n for n in ["README.txt", "CODEBOOK.txt"] if (out / n).exists()]:
             f.write(f"{md5(p)}  {p.name}\n")
 
     info = [f"rows {len(d):,}; columns {d.shape[1]}; revPJ per-parcel included: {args.include_revpj}",

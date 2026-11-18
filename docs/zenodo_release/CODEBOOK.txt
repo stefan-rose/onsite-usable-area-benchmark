@@ -1,4 +1,4 @@
-CODEBOOK — Parcel-level usable area for on-site solar and wind at U.S.
+CODEBOOK: Parcel-level usable area for on-site solar and wind at U.S.
 manufacturing parcels: NLCD and reV benchmark (version 1.0)
 ==========================================================================
 
@@ -14,10 +14,10 @@ Units:   Areas in acres (1 acre = 4,046.8564224 m2), rounded to 4 decimals
          Albers, equal-area).
 Paper:   Rose, S., Ramos, D. Sizing up on-site industrial energy potential:
          a parcel-level comparison of usable-area methods. Applied Energy
-         (under review). TODO: add the DOI after publication.
+         (under review).
 Code:    https://github.com/stefan-rose/onsite-usable-area-benchmark
-         Release v1.0.0. TODO: confirm the tag and add its commit hash.
          Script scripts/14_build_zenodo_release.py builds these files.
+         Instructions to check and rebuild them: docs/ZENODO_RELEASE.md.
 
 
 OVERVIEW
@@ -158,8 +158,6 @@ SOLAR USABLE AREA
     doi:10.2172/2500362). Computed from the 90 m solar composite
     exclusion rasters released on OEDI (submission 8319,
     https://data.openei.org/submissions/8319).
-    TODO: update the OEDI file names and DOI once NLR posts the 90 m
-    composites (planned to replace the 92.11 m files now listed).
 
     reV Parcel Joined (revPJ) is NOT included per parcel. Its raster is
     built on the licensed LightBox parcel fabric. Totals by size bin and
@@ -219,7 +217,7 @@ WIND USABLE AREA
     wind_rev_reference_hh24_rd9p6_ac    Reference, 24/9.6
     The 115/170 layers were regridded by NLR from their native ~92.1 m
     grid. NLR produced the other configurations for this study.
-    TODO: add the OEDI wind submission URL/DOI once NLR publishes it.
+    Public release of the wind layers on OEDI is pending.
 
 
 reV QUALITY-ASSURANCE FLAGS
@@ -273,8 +271,6 @@ NOTES ON DATA HANDLING
 - M-FIND v1.1 contains 87 CONUS facility records that are not in this
   parcel universe. The universe was fixed on 2026-04-23, before those
   records were added. See paper Section 2.1.
-  TODO: reconcile with the paper footnote, which says 85 records (84
-  parcels) were added after the analysis.
 
 
 PROVENANCE SUMMARY
@@ -288,14 +284,12 @@ PROVENANCE SUMMARY
   NLCD 2021 (doi:10.5066/P9JZ7AO3)        NLCD class areas
   NLR reV 2024 composite exclusions       reV usable area
     (Lopez et al. 2025, doi:10.2172/2500362;
-     OEDI 8319 for solar; wind TODO)
+     OEDI 8319 for solar; wind release pending)
   TIGER/Line 2023 Urban Areas             flag_urban
   FAA Special Use Airspace                flag_dod_sua
   FAA airport facilities                  flag_airport_3km
   USFWS Critical Habitat                  flag_usfws_critical_habitat
   USFWS National Wetlands Inventory       flag_nwi
   USGS 3DEP 1-arc-second DEM              flag_slope_gt25
-  TODO: add release versions and access dates for the federal layers
-  once they are fixed in paper Section 2.
 
 License: CC BY 4.0.

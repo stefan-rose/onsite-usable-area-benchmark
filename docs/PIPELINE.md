@@ -4,9 +4,9 @@ This document lists every pipeline script in run order, its inputs, and its outp
 
 ## Convention
 
-- Scripts numbered `00`–`13` form the main pipeline and must be run in order (some dependencies span numbers; see below). Scripts `12` and `13` summarize the reV wind turbine configurations and build the manuscript figure data.
+- Scripts numbered `00`–`13` form the main pipeline and must be run in order (some dependencies span numbers; see below). Scripts `12` and `13` summarize the reV wind turbine configurations and build the manuscript figure data. Script `14` builds the Zenodo dataset release.
 - Figure-generation scripts and validation scripts run after the pipeline completes.
-- Numbered scripts load the local data root and input paths from `config.toml` through `scripts/_config.py` (Python) or `scripts/_config.R` (R). Standalone scripts under `scripts/data_download/` and `scripts/validation/` read the `IEDO_BASE` environment variable instead. See the README.
+- Numbered scripts load the local data root and input paths from `config.toml` through `scripts/_config.py` (Python) or `scripts/_config.R` (R). Standalone scripts under `scripts/data_download/` and `scripts/validation/` read the `IEDO_BASE` environment variable instead (except `verify_zenodo_release.py`, which takes the folder of downloaded Zenodo files as its argument). See the README.
 
 ## Main pipeline
 
@@ -84,6 +84,13 @@ This document lists every pipeline script in run order, its inputs, and its outp
 - **Outputs.** `outputs/fig2_bins_grid90.csv` and `outputs/fig1_totals_grid90.csv`, plus tracked copies `figures/data/fig_bins.csv` and `figures/data/fig_headline_totals.csv`. (The `fig1`/`fig2` prefixes in the `outputs/` names predate the current figure order.)
 - **Checks.** F1–F4 (see the script header); exits non-zero on failure.
 - **Run.** `pixi run fig-data <published_bins.csv>`.
+
+### `14_build_zenodo_release.py`
+- **Purpose.** Builds the Zenodo dataset release ([doi:10.5281/zenodo.24354306](https://doi.org/10.5281/zenodo.24354306)): one row per parcel keyed to M-FIND v1.1 `obs_id`, with the LightBox parcel ID removed, plus size-bin and state summaries.
+- **Inputs.** Outputs of scripts `01`–`08` and `10`; M-FIND v1.1; the parcel-to-facility crosswalk; `figures/data/` for the total checks; `README.txt` and `CODEBOOK.txt` from `docs/zenodo_release/`.
+- **Outputs.** `outputs/zenodo_release/v<version>/` (data CSV, two summary CSVs, README, CODEBOOK, `MD5SUMS.txt`, `CHECKS_v<version>.txt`).
+- **Checks.** 12 release checks (see `CHECKS_v<version>.txt`); exits non-zero on failure.
+- **Run.** `pixi run zenodo-release --version 1.0`. Steps and a no-licensed-data check: [`ZENODO_RELEASE.md`](ZENODO_RELEASE.md).
 
 ## Figure generation
 

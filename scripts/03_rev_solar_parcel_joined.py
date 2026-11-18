@@ -21,8 +21,8 @@ Inputs
       NaN mean in usable_area_rev_m2 for reporting.)
 
 Outputs
-  Scripts/method_comparison/outputs/full_run_pj_2026_04_23/rev_<STATE>.csv  (checkpoints)
-  Scripts/method_comparison/outputs/full_run_pj_2026_04_23/rev_full_population.csv
+  Scripts/method_comparison/outputs/full_run_pj_fy26_2026_04_23/rev_<STATE>.csv  (checkpoints)
+  Scripts/method_comparison/outputs/full_run_pj_fy26_2026_04_23/rev_full_population.csv
 
 Run
   cd Scripts/method_comparison
@@ -202,7 +202,7 @@ def main() -> None:
     print(f"  {len(states)} states, {len(gdf):,} parcels ready")
 
     suffix = f"_dryrun_{'_'.join(sorted(dry_states))}" if dry else ""
-    out_dir = OUT_BASE / f"full_run_pj_{DATASET_TAG}{suffix}"
+    out_dir = OUT_BASE / f"full_run_pj_fy26_{DATASET_TAG}{suffix}"
     out_dir.mkdir(parents=True, exist_ok=True)
     final_csv = out_dir / "rev_full_population.csv"
 
