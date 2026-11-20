@@ -183,11 +183,12 @@ WIND USABLE AREA
     flag_urban                   intersects a TIGER/Line 2023
                                  Urban Area polygon (UACE20)     (229,624)
     flag_dod_sua                 intersects FAA Special Use
-                                 Airspace flagged DoD restricted (13,122)
+                                 Airspace polygon of any type    (13,122)
     flag_usfws_critical_habitat  intersects a USFWS Critical
                                  Habitat polygon                 (4,083)
-    flag_airport_3km             within 3 km of an FAA airport
-                                 facility centroid               (131,561)
+    flag_airport_3km             within 3 km of an FAA landing
+                                 facility of any type, including
+                                 heliports and private use       (131,561)
     flag_slope_gt25              any overlapping 3DEP 1-arc-second
                                  cell with slope >= 25 %         (11,852)
     flag_nwi                     intersects a USFWS National
@@ -271,9 +272,11 @@ NOTES ON DATA HANDLING
 - Technical potential only. Values are land-availability estimates. They
   do not account for resource quality, interconnection, ownership,
   operations on the site, or developer intent.
-- M-FIND v1.1 contains 87 CONUS facility records that are not in this
-  parcel universe. The universe was fixed on 2026-04-23, before those
-  records were added. See paper Section 2.1.
+- The universe contains all 338,904 CONUS facility records in M-FIND
+  v1.1, with CONUS defined by the state part of FIPS_CODE (zero-padded
+  to five digits). Do not select CONUS with the M-FIND STATE field. It
+  is blank for 87 Alaska and Hawaii records, and two records in WA and
+  ID are labeled AK. See paper Section 2.1.
 
 
 PROVENANCE SUMMARY
@@ -288,11 +291,19 @@ PROVENANCE SUMMARY
   NLR reV 2024 composite exclusions       reV usable area
     (Lopez et al. 2025, doi:10.2172/2500362;
      OEDI 8319 for solar; OEDI 11697 for wind)
-  TIGER/Line 2023 Urban Areas             flag_urban
-  FAA Special Use Airspace                flag_dod_sua
-  FAA airport facilities                  flag_airport_3km
-  USFWS Critical Habitat                  flag_usfws_critical_habitat
-  USFWS National Wetlands Inventory       flag_nwi
-  USGS 3DEP 1-arc-second DEM              flag_slope_gt25
+  TIGER/Line 2023 Urban Areas, via BTS    flag_urban
+    NTAD Feb 2024 (doi:10.21949/1522282),
+    accessed 2024-08-13
+  FAA AIS Special Use Airspace, cycle     flag_dod_sua
+    effective 2026-03-19
+  FAA AIS Airports, cycle effective       flag_airport_3km
+    2024-09-05
+  USFWS ECOS Critical Habitat polygons,   flag_usfws_critical_habitat
+    accessed 2024-09-17
+  USFWS National Wetlands Inventory,      flag_nwi
+    state geopackages, accessed
+    2026-04-29/30
+  USGS 3DEP 1-arc-second DEM, current     flag_slope_gt25
+    tiles, accessed 2026-04-29
 
 License: CC BY 4.0.

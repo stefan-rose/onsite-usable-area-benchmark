@@ -52,13 +52,13 @@ This document lists every pipeline script in run order, its inputs, and its outp
 - **Outputs.** `outputs/nlcd_wind/nlcd_wind_percentage_only.csv`, `..._summary.csv`.
 
 ### `08_nlcd_wind_binary_exclusions.R`
-- **Purpose.** Applies the 5-layer NLCD wind binary exclusion set (parcel <1 ac, urban overlap, DoD restricted airspace, USFWS Critical Habitat, airport 3 km buffer) on top of the pct-only baseline.
+- **Purpose.** Applies the 5-layer NLCD wind binary exclusion set (parcel <1 ac, urban overlap, FAA Special Use Airspace (all types), USFWS Critical Habitat, airport 3 km buffer) on top of the pct-only baseline.
 - **Inputs.** `outputs/nlcd_wind/nlcd_wind_percentage_only.csv`; five binary exclusion layers (see DATA_SOURCES).
 - **Outputs.** `outputs/nlcd_wind/nlcd_wind_percentage_plus_binary.csv`, `..._summary.csv`.
 
 ### `09_airport_buffer_sensitivity.R`
 - **Purpose.** Sensitivity of the 5-layer binary result to airport buffer radius (1, 2, 3, 4, 5 km).
-- **Inputs.** Pct-only baseline; airport point layer (HIFLD).
+- **Inputs.** Pct-only baseline; airport point layer (FAA AIS).
 - **Outputs.** `outputs/nlcd_wind/airport_buffer_sensitivity/`.
 
 ### `10_rebuild_headline_3km_and_add_slope_nwi.R`
@@ -110,7 +110,7 @@ This document lists every pipeline script in run order, its inputs, and its outp
 These scripts download and flag ancillary datasets that feed script 10.
 
 - `download_and_flag_nwi.sh` — orchestrates state-by-state NWI download + flagging.
-- `download_and_flag_slope.sh` — orchestrates SRTM/3DEP slope tile download + flagging.
+- `download_and_flag_slope.sh` — orchestrates 3DEP slope tile download + flagging.
 - `flag_parcels_one_state_nwi.R`, `flag_parcels_one_state_nwi_raster.R`, `flag_parcels_one_state_nwi_coverage.R` — per-state NWI flagging in three variants (vector, raster, coverage-fraction).
 - `flag_parcels_one_tile_slope.R` — per-tile slope flagging.
 - `merge_nwi_flags.R`, `merge_slope_flags.R` — CONUS-level merges of state/tile-level flag files.

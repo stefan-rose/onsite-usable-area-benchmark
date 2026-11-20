@@ -29,9 +29,18 @@ Blocking items:
       README.txt, CODEBOOK.txt, MD5SUMS.txt.
 - [ ] OEDI 8319: confirm the 90 m solar composites (Open/Reference/Limited) are
       posted. If NLR mints a DOI, switch the 8319 identifier to it.
-- [ ] Reconcile the M-FIND v1.1 count: 87 CONUS obs_ids are not in the universe,
-      but the paper footnote says 85 records / 84 parcels (CODEBOOK note).
-- [ ] Versions and access dates for the federal layers (CODEBOOK provenance).
+- [x] M-FIND count reconciled (2026-11-20). Universe obs_ids == M-FIND v1.1 CONUS by
+      zero-padded FIPS (338,904; 0 missing, 0 extra). Both the "87" and the paper's
+      "85 / 84" came from the STATE field: blank for 87 AK/HI records, and 2 WA/ID
+      records labeled AK (kc4gz401cr, 4qgicqj9ct). CODEBOOK note and paper footnote
+      rewritten. Tell the M-FIND team (STATE field fix for v1.2).
+- [x] Federal layer versions and access dates in CODEBOOK provenance and DATA_SOURCES.md
+      (2026-11-20, from the metadata XMLs and download logs in Data/wind_exclusions/).
+- [ ] BLOCKER (Stefan): flag_dod_sua is ALL SUA types, not "DoD restricted" as the paper
+      says. Of 13,122 flagged parcels only 735 touch R/P; with an R/P filter the 5-layer
+      wind total would be about 1.559 M ac instead of 1.309. Decide: reword the paper or
+      re-run. CODEBOOK now describes the data as it is ("polygon of any type").
+      Airports similarly include heliports and private-use facilities.
 - [ ] `publication_date`.
 - [x] Zenodo DOI reserved on the draft record: 10.5281/zenodo.24354306 (2026-11-18).
       Now in README.txt "Citation", repo README, docs/ZENODO_RELEASE.md, PIPELINE.md and
@@ -51,5 +60,3 @@ specifics below when they become available, then rebuild with script 14 (MD5SUMS
 |---|---|---|
 | README "This dataset accompanies..." (para 2); CODEBOOK header `Paper:` | "Applied Energy (under review)" | Paper DOI after publication (metadata-only edit or v1.1) |
 | CODEBOOK vars 42-44 (solar reV) | cites OEDI 8319 only | Update OEDI file names/DOI once the 90 m composites replace the 92.11 m files |
-| CODEBOOK handling notes, M-FIND count | "87 CONUS facility records that are not in this parcel universe" | Reconcile with paper footnote (85 records / 84 parcels); public text and paper currently disagree |
-| CODEBOOK provenance summary | federal layers listed without versions | Add release versions and access dates once fixed in paper Section 2 |

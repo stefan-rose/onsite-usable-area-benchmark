@@ -63,7 +63,7 @@ Underlying data are **not redistributed in this repository**. See [`docs/DATA_SO
 - **Parcel geometries** — the 305,123-parcel CONUS manufacturing universe is a derived product of proprietary parcel fabrics (LightBox, Land Records). The **M-FIND dataset** (Zenodo DOI [10.5281/zenodo.21827821](https://doi.org/10.5281/zenodo.21827821), v1.1) is the reproducibility anchor and defines the parcel identifiers used throughout.
 - **reV composite exclusion rasters** — released by NLR; see DATA_SOURCES.md for the current supply-curve release.
 - **NLCD 2021** — public, U.S. Geological Survey / MRLC.
-- **NWI wetlands, slope (SRTM/3DEP), airport buffers, DoD restricted airspace, USFWS Critical Habitat, urban areas** — all public federal or state datasets; sources listed individually.
+- **NWI wetlands, slope (USGS 3DEP), airport buffers, FAA Special Use Airspace, USFWS Critical Habitat, urban areas** — all public federal or state datasets; sources listed individually.
 
 ## Zenodo dataset release
 
