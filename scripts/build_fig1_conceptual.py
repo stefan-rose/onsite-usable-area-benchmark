@@ -282,17 +282,27 @@ values = [NLCD_USABLE_AC] + [REV_USABLE_AC[m] for m in methods[1:]]
 colors = ["#2ca25f", "#deebf7", "#6baed6", "#08519c"]
 edges = ["#00441b", "#08519c", "#08519c", "#08519c"]
 ax_c.barh(np.arange(4), values, color=colors, edgecolor=edges, linewidth=0.7, height=0.66)
+# Value labels: outside the bar end, except where that would cross the
+# gross-area line; those go inside the bar (right-aligned).
+XMAX = 85.0                       # just past gross area; no estimate can exceed it
+BAR_LABELS = []
 for i, v in enumerate(values):
-    ax_c.text(v + 1.0, i, f"{v:.2f} ac", va="center", fontsize=FS, fontweight="bold", color=INK)
+    inside = v + 14.0 > GROSS_AC
+    t = ax_c.text(v - 1.0 if inside else v + 1.0, i, f"{v:.2f} ac", va="center",
+                  ha="right" if inside else "left", fontsize=FS, fontweight="bold",
+                  color="white" if (inside and colors[i] == "#08519c") else INK)
+    BAR_LABELS.append(t)
 ax_c.set_yticks(np.arange(4)); ax_c.set_yticklabels(methods, fontsize=FS)
 ax_c.invert_yaxis()
-ax_c.set_xlim(0, 100)
+ax_c.set_xlim(0, XMAX)
+ax_c.set_xticks([0, 20, 40, 60, 80])
 ax_c.set_xlabel("Usable area estimate (ac)", fontsize=FS, labelpad=2)
 ax_c.tick_params(axis="both", labelsize=FS, length=2, width=0.5, pad=2)
 ax_c.spines[["top", "right"]].set_visible(False)
 ax_c.axvline(GROSS_AC, color="#888", linestyle="--", linewidth=0.8)
-ax_c.text(GROSS_AC + 1.0, 3.25, f"parcel gross\n{GROSS_AC:.1f} ac", fontsize=FS, color="#555", va="center",
-          linespacing=1.1)
+# Gross-area label sits just above the plot, centred on the dashed line.
+GROSS_LABEL = ax_c.text(GROSS_AC, 1.03, f"parcel gross {GROSS_AC:.1f} ac", transform=ax_c.get_xaxis_transform(),
+                        fontsize=FS, color="#555", ha="center", va="bottom", clip_on=False)
 
 # ---------------------------------------------------------------------
 # Checks (no mathtext is used, so no sub-/superscripts below the floor): font floor, in-bounds, no overlaps, table labels inside cells
@@ -325,6 +335,22 @@ for a in map_axes:
     for t, bb in boxes:
         if t.axes is None and min(bb.x1, ab.x1) - max(bb.x0, ab.x0) > 0.5 and min(bb.y1, ab.y1) - max(bb.y0, ab.y0) > 0.5:
             problems.append(f"text on map: {t.get_text()!r}")
+axb = ax_c.get_window_extent(rend)
+gb = GROSS_LABEL.get_window_extent(rend)
+if gb.y0 < axb.y1:
+    problems.append("gross label overlaps the plot area")
+xline = ax_c.transData.transform((GROSS_AC, 0))[0]
+for t in BAR_LABELS:
+    bb = t.get_window_extent(rend)
+    if bb.x0 - 1 < xline < bb.x1 + 1:
+        problems.append(f"bar label crosses the gross line: {t.get_text()!r}")
+    if bb.x1 > axb.x1 or bb.x0 < axb.x0:
+        problems.append(f"bar label outside plot: {t.get_text()!r}")
+for i, t in enumerate(BAR_LABELS):      # inside labels must fit inside their bar
+    if t.get_ha() == "right":
+        bb = t.get_window_extent(rend)
+        if bb.x0 < ax_c.transData.transform((0, 0))[0] + 2:
+            problems.append(f"bar label wider than bar: {t.get_text()!r}")
 print("\n".join(problems) if problems else
       f"layout check: OK ({len(allt)} labels, {len(CELLS)} table cells, min font {min(t.get_fontsize() for t in allt)} pt)")
 for lbl, d in REV_STATS.items():
