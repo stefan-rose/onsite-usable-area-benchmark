@@ -2,7 +2,8 @@
 """
 Build Figure 1 - Conceptual comparison of NLCD land-cover-proportion
 vs reV composite-exclusion usable-area methods, using an Ohio exemplar
-parcel (M-FIND v1.1 obs_id ku4emmcinr, Holmes County, 81.2 ac).
+parcel (M-FIND v1.1 obs_id 2n60pgp73g, Darke County, 78.8 ac; light
+manufacturing in the Ohio statewide parcel land-use code).
 
 Run from repo root under pixi:
     pixi run fig1-conceptual
@@ -14,315 +15,323 @@ Outputs (written to the FIGURES directory from config.toml):
 manuscript source includes it under that name. It appears as Figure 1
 in the compiled paper.)
 
+The figure is drawn at its printed size (6.5 in, the manuscript text
+width), so the font sizes below are the sizes on the page. The script
+checks before saving that every font is >= MIN_PT, that all text lies
+inside the figure, that no two labels overlap, and that every table
+label fits inside its cell. It exits non-zero if any check fails.
+
 Data dependencies:
-- MRLC WMS: https://www.mrlc.gov/geoserver/mrlc_display/wms  (NLCD 2021 land cover)
-- reV composite exclusion rasters (EPSG:5070, 90 m) under Data/reV Exclusions/
-- Parcel geometry: the exemplar row of PARCELS_WORKING_GPKG
-  (parcels_conus_2026_04_23.gpkg, written by script 01). The row is found
-  by mapping the M-FIND obs_id to its licensed parcel key through the local
-  facility site list (FACILITY_CSV), so no LightBox key is stored here.
-- The NLCD WMS image is cached under intermediate/fig1_conceptual/
-- Pipeline exact values from method_comparison output CSVs.
+- Parcel boundary: data/exemplar_parcel/ (open OGRIP Ohio Statewide
+  Parcels record; see the README there). No licensed geometry is used.
+- MRLC WMS: https://www.mrlc.gov/geoserver/mrlc_display/wms (NLCD 2021
+  land cover). The tile is cached under intermediate/fig1_conceptual/;
+  set FIG1_REFRESH=1 to download it again.
+- reV solar composite exclusion rasters (EPSG:5070, 90 m), REV_SOLAR.
+- Per-class NLCD acres and the four usable-area values are the pipeline
+  values for this parcel (Zenodo release v1.0, row primary_obs_id
+  2n60pgp73g). The reV values are re-derived here from the rasters by
+  cell-centre zonal means and asserted against the pipeline values.
 """
-import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
-from matplotlib.gridspec import GridSpec, GridSpecFromSubplotSpec
-from matplotlib.colors import LinearSegmentedColormap
-from matplotlib.path import Path as MplPath
-from matplotlib.patches import PathPatch
-import matplotlib.image as mpimg
-import numpy as np
-import geopandas as gpd
-import rasterio
-from rasterio.mask import mask
-from rasterio.windows import from_bounds
-import urllib.request, urllib.parse, os
-
-# Path configuration: load FIGURES output dir and named input paths from
-# config.toml at the repo root (falls back to config.example.toml).
+import os
 import sys as _sys
+import urllib.parse
+import urllib.request
 from pathlib import Path as _Path
-_sys.path.insert(0, str(_Path(__file__).resolve().parent))
-from _config import FACILITY_CSV, FIGURES, INTERMEDIATE, PARCELS_WORKING_GPKG, REV_SOLAR  # noqa: E402
-import pandas as pd
 
-OUT = str(FIGURES / "fig3_conceptual_ohio.png")
+import geopandas as gpd
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.image as mpimg  # noqa: E402
+import matplotlib.pyplot as plt  # noqa: E402
+import numpy as np  # noqa: E402
+import rasterio  # noqa: E402
+from matplotlib.colors import LinearSegmentedColormap  # noqa: E402
+from matplotlib.patches import PathPatch, Rectangle  # noqa: E402
+from matplotlib.path import Path as MplPath  # noqa: E402
+from rasterio.windows import from_bounds  # noqa: E402
+from rasterstats import zonal_stats  # noqa: E402
 
-# Exemplar facility (M-FIND v1.1 obs_id) and a scratch directory for the
-# downloaded NLCD tile. The scratch directory lives under intermediate/,
-# which is gitignored.
-EXEMPLAR_OBS_ID = "ku4emmcinr"
+_REPO = _Path(__file__).resolve().parents[1]
+_sys.path.insert(0, str(_REPO / "scripts"))
+from _config import FIGURES, INTERMEDIATE, REV_SOLAR  # noqa: E402
+
+OUT = FIGURES / "fig3_conceptual_ohio.png"
+EXEMPLAR_OBS_ID = "2n60pgp73g"
+PARCEL_GEOJSON = _REPO / "data" / "exemplar_parcel" / "ogrip_39037_F27230906010110101.geojson"
 CACHE = INTERMEDIATE / "fig1_conceptual"
 CACHE.mkdir(parents=True, exist_ok=True)
 
-# --- Parcel in EPSG:5070 (same as reV) ---
-# Map the obs_id to the parcel key with the local facility site list, then
-# read only that row from the working parcel universe (script 01).
-_sl = pd.read_csv(FACILITY_CSV, dtype=str, usecols=["PARCEL_LID", "obs_id"])
-_hit = _sl[_sl.obs_id.str.split(",").apply(
-    lambda ids: EXEMPLAR_OBS_ID in [i.strip() for i in ids] if isinstance(ids, list) else False)]
-assert _hit.PARCEL_LID.nunique() == 1, f"obs_id {EXEMPLAR_OBS_ID} maps to {_hit.PARCEL_LID.nunique()} parcels"
-_lid = _hit.PARCEL_LID.iloc[0]
-p_wgs = gpd.read_file(PARCELS_WORKING_GPKG,
-                      where=f"PARCEL_LID = '{_lid}'").to_crs(4326)
-assert len(p_wgs) == 1, f"expected 1 exemplar parcel, found {len(p_wgs)}"
-p_5070 = p_wgs.to_crs(5070)
-b5070 = p_5070.total_bounds
-# Symmetric padding
-pad_m = 90
-b5070_pad = (b5070[0]-pad_m, b5070[1]-pad_m, b5070[2]+pad_m, b5070[3]+pad_m)
-
-# --- NLCD via WMS in EPSG:5070 (matches reV CRS) ---
-# WMS BBOX in v1.3.0 order for EPSG:5070 (projected) is minx,miny,maxx,maxy
-wms_params = {
-    "SERVICE":"WMS","VERSION":"1.3.0","REQUEST":"GetMap",
-    "LAYERS":"mrlc_display:NLCD_2021_Land_Cover_L48",
-    "CRS":"EPSG:5070",
-    "BBOX":f"{b5070_pad[0]},{b5070_pad[1]},{b5070_pad[2]},{b5070_pad[3]}",
-    "WIDTH":"500","HEIGHT":"800","FORMAT":"image/png","TRANSPARENT":"TRUE",
-}
-nlcd_png = str(CACHE / "nlcd_5070.png")
-# Always refresh so we're consistent
-urllib.request.urlretrieve(
-    "https://www.mrlc.gov/geoserver/mrlc_display/wms?" + urllib.parse.urlencode(wms_params),
-    nlcd_png)
-nlcd_img = mpimg.imread(nlcd_png)
-print(f"NLCD img shape: {nlcd_img.shape}, size {os.path.getsize(nlcd_png)} bytes")
-
-# --- reV rasters clipped to same bbox ---
-rev_paths = {
-    "reV Open":      str(REV_SOLAR["open"]),
-    "reV Reference": str(REV_SOLAR["reference"]),
-    "reV Limited":   str(REV_SOLAR["limited"]),
-}
-rev_arrays = {}
-for lbl, pth in rev_paths.items():
-    with rasterio.open(pth) as src:
-        w = from_bounds(*b5070_pad, transform=src.transform)
-        arr = src.read(1, window=w)
-        arr = np.where(arr == src.nodata, np.nan, arr)
-        win_transform = src.window_transform(w)
-        rows, cols = arr.shape
-        left = win_transform.c
-        top  = win_transform.f
-        right = left + cols*src.res[0]
-        bottom = top - rows*src.res[1]
-        rev_arrays[lbl] = dict(arr=arr, extent=(left, right, bottom, top))
-
-# --- Pipeline exact values (from CSVs) ---
-PIPELINE = {
-    "nlcd_usable_ac": 35.475,
-    "rev": {
-        "reV Open":      {"n_pix":40, "mean_incl":0.9485, "usable_ac":77.034},
-        "reV Reference": {"n_pix":40, "mean_incl":0.2945, "usable_ac":23.918},
-        "reV Limited":   {"n_pix":40, "mean_incl":0.0215, "usable_ac":1.746},
-    },
-    "parcel_gross_ac": p_wgs.acres.iloc[0],
-}
-
-# NLCD per-class exact values (ac, avail, color)
-nlcd_comp = [
-    ("82", "Cultivated Crops",        30.377, 0.60, "#ab6c28"),
-    ("81", "Pasture/Hay",             21.392, 0.60, "#dcd93d"),
-    ("41", "Deciduous Forest",        17.018, 0.10, "#68ab5f"),
-    ("43", "Mixed Forest",             6.369, 0.15, "#b5c58f"),
-    ("21", "Developed, Open Space",    3.829, 0.30, "#dec5c5"),
-    ("22", "Developed, Low",           1.795, 0.30, "#d99282"),
-    ("23", "Developed, Medium",        0.345, 0.20, "#eb0000"),
+# ---------------------------------------------------------------------
+# Pipeline values for this parcel (Zenodo release v1.0)
+# ---------------------------------------------------------------------
+GROSS_AC = 78.7953            # parcel_acres (licensed polygon, EPSG:5070)
+NLCD_USABLE_AC = 37.1836      # solar_nlcd_ac
+REV_USABLE_AC = {"reV Open": 71.2188, "reV Reference": 20.9919, "reV Limited": 9.2534}
+# (code, label, acres, solar availability, NLCD legend colour); NLCD code order
+NLCD_COMP = [
+    ("11", "Open water",            2.3794, 0.00, "#466b9f"),
+    ("21", "Developed, open space", 4.7312, 0.30, "#dec5c5"),
+    ("22", "Developed, low",        4.1347, 0.30, "#d99282"),
+    ("23", "Developed, medium",     4.7686, 0.20, "#eb0000"),
+    ("24", "Developed, high",      10.2430, 0.20, "#ab0000"),
+    ("81", "Pasture/hay",           0.8471, 0.60, "#dcd93d"),
+    ("82", "Cultivated crops",     51.6888, 0.60, "#ab6c28"),
 ]
-tot_ac = sum(c[2] for c in nlcd_comp)
-nlcd_usable_ac = sum(c[2]*c[3] for c in nlcd_comp)
-print(f"NLCD sum: {tot_ac:.3f} ac; usable: {nlcd_usable_ac:.3f} ac (pipeline: 35.475)")
-
-# =====================================================================
-# FIGURE
-# =====================================================================
-fig = plt.figure(figsize=(13.5, 9.3), constrained_layout=False)
-gs = GridSpec(3, 2, figure=fig,
-              height_ratios=[1.35, 0.98, 0.72],
-              width_ratios=[1.0, 1.0],
-              hspace=0.36, wspace=0.14, left=0.055, right=0.98, top=0.92, bottom=0.06)
-
-fig.suptitle(f"Exemplar parcel · Ohio · {PIPELINE['parcel_gross_ac']:.1f} ac",
-             fontsize=15, fontweight="bold", y=0.985, color="#111111")
-fig.text(0.28, 0.945, "NLCD land-cover-proportion method",
-         ha="center", fontsize=13, fontweight="bold", color="#08519c")
-fig.text(0.76, 0.945, "reV composite-exclusion method",
-         ha="center", fontsize=13, fontweight="bold", color="#08519c")
+TOT_AC = sum(c[2] for c in NLCD_COMP)
+assert abs(sum(c[2] * c[3] for c in NLCD_COMP) - NLCD_USABLE_AC) < 0.001
 
 # ---------------------------------------------------------------------
-# ROW 1 — MAPS (all in EPSG:5070)
+# Parcel (open OGRIP boundary) in EPSG:5070
 # ---------------------------------------------------------------------
-# NLCD map — clipped to parcel polygon
-ax_n = fig.add_subplot(gs[0, 0])
-# First draw a very light gray background rectangle showing bbox extent
-ax_n.imshow(nlcd_img, extent=(b5070_pad[0], b5070_pad[2], b5070_pad[1], b5070_pad[3]),
-            interpolation="nearest", aspect="equal", alpha=0.20)
-# Then draw same image again clipped to parcel path (full opacity where parcel lies)
-im_nlcd = ax_n.imshow(nlcd_img, extent=(b5070_pad[0], b5070_pad[2], b5070_pad[1], b5070_pad[3]),
-                      interpolation="nearest", aspect="equal", alpha=1.0)
-# Build clip path from parcel polygon
-parcel_geom = p_5070.geometry.iloc[0]
-# Handle MultiPolygon by taking largest polygon
-if parcel_geom.geom_type == "MultiPolygon":
-    parcel_geom = max(parcel_geom.geoms, key=lambda g: g.area)
-xy = np.array(parcel_geom.exterior.coords)
-clip_path = MplPath(xy)
-clip_patch = PathPatch(clip_path, transform=ax_n.transData, facecolor="none")
-ax_n.add_patch(clip_patch)
-im_nlcd.set_clip_path(clip_patch)
+p_5070 = gpd.read_file(PARCEL_GEOJSON).to_crs(5070)
+assert len(p_5070) == 1 and p_5070["mfind_obs_id"].iloc[0] == EXEMPLAR_OBS_ID
+assert abs(p_5070.area.iloc[0] / 4046.8564224 - GROSS_AC) < 0.05
+geom = p_5070.geometry.iloc[0]
+if geom.geom_type == "MultiPolygon":
+    geom = max(geom.geoms, key=lambda g: g.area)
+OUTLINE = np.array(geom.exterior.coords)   # interior ring is a 0.0006 ac sliver; not drawn
+b = p_5070.total_bounds
+PAD_M = 90
+VIEW = (b[0] - PAD_M, b[1] - PAD_M, b[2] + PAD_M, b[3] + PAD_M)
+ASPECT = (VIEW[2] - VIEW[0]) / (VIEW[3] - VIEW[1])   # width / height
 
-# Draw parcel outline on top
-p_5070.plot(ax=ax_n, facecolor="none", edgecolor="black", linewidth=1.8)
-ax_n.set_xlim(b5070_pad[0], b5070_pad[2])
-ax_n.set_ylim(b5070_pad[1], b5070_pad[3])
-ax_n.set_title("NLCD 2021 land cover (30 m)", fontsize=10, loc="left")
-ax_n.set_xticks([]); ax_n.set_yticks([])
-for s in ax_n.spines.values(): s.set_edgecolor("#888"); s.set_linewidth(0.6)
+# reV: cell-centre zonal means, checked against the pipeline values
+REV_STATS = {}
+for lbl, key in (("reV Open", "open"), ("reV Reference", "reference"), ("reV Limited", "limited")):
+    s = zonal_stats(p_5070, str(REV_SOLAR[key]), stats=["mean", "count"], all_touched=False)[0]
+    mean = s["mean"] / (100.0 if s["mean"] > 1.5 else 1.0)
+    assert abs(mean * GROSS_AC - REV_USABLE_AC[lbl]) < 0.01, (lbl, mean * GROSS_AC, REV_USABLE_AC[lbl])
+    REV_STATS[lbl] = dict(n=s["count"], mean=mean, usable=REV_USABLE_AC[lbl])
 
-# Inline NLCD legend
-legend_handles = [mpatches.Patch(facecolor=hx, edgecolor="#666", linewidth=0.4, label=nm)
-                  for _, nm, _, _, hx in nlcd_comp]
-ax_n.legend(handles=legend_handles, loc="center left", bbox_to_anchor=(1.02, 0.5),
-            fontsize=8, frameon=False, title="Classes present", title_fontsize=8,
-            handlelength=1.2, handleheight=1.0, labelspacing=0.5)
+# NLCD WMS tile in EPSG:5070 (v1.3.0 BBOX order minx,miny,maxx,maxy)
+HPX = 800
+WPX = int(round(HPX * ASPECT))
+nlcd_png = CACHE / f"nlcd_5070_{EXEMPLAR_OBS_ID}.png"
+if os.environ.get("FIG1_REFRESH") or not nlcd_png.exists():
+    wms = {
+        "SERVICE": "WMS", "VERSION": "1.3.0", "REQUEST": "GetMap",
+        "LAYERS": "mrlc_display:NLCD_2021_Land_Cover_L48", "CRS": "EPSG:5070",
+        "BBOX": ",".join(f"{v}" for v in VIEW), "WIDTH": str(WPX), "HEIGHT": str(HPX),
+        "FORMAT": "image/png", "TRANSPARENT": "TRUE",
+    }
+    urllib.request.urlretrieve("https://www.mrlc.gov/geoserver/mrlc_display/wms?" + urllib.parse.urlencode(wms), nlcd_png)
+nlcd_img = mpimg.imread(nlcd_png)
+assert nlcd_img.shape[:2] == (HPX, WPX), nlcd_img.shape
 
-# reV small-multiples — REVERSED cmap: light=included(1), dark=excluded(0)
-sub_gs = GridSpecFromSubplotSpec(1, 3, subplot_spec=gs[0,1], wspace=0.10)
-# Reversed: 0 = dark blue (excluded), 1 = light/near-white (included)
-cmap_rev = LinearSegmentedColormap.from_list("rev_incl_rev", ["#08306b","#4292c6","#c6dbef","#f7f7f7"])
-rev_axes = []
-first_ax_pos = None
-last_ax_pos = None
-for i, (lbl, d) in enumerate(rev_arrays.items()):
-    ax = fig.add_subplot(sub_gs[0, i])
-    im = ax.imshow(d["arr"], extent=d["extent"], cmap=cmap_rev, vmin=0, vmax=1,
-                   interpolation="nearest", aspect="equal")
-    p_5070.plot(ax=ax, facecolor="none", edgecolor="black", linewidth=1.5)
-    ax.set_xlim(d["extent"][0], d["extent"][1])
-    ax.set_ylim(d["extent"][2], d["extent"][3])
-    ax.set_xticks([]); ax.set_yticks([])
-    ax.set_title(lbl, fontsize=10, pad=3)
-    for s in ax.spines.values(): s.set_edgecolor("#888"); s.set_linewidth(0.5)
-    rev_axes.append((ax, im))
-
-# Draw once so subplot positions are finalized, then align colorbar to sub-plot extent
-fig.canvas.draw()
-pos_left  = rev_axes[0][0].get_position()
-pos_right = rev_axes[-1][0].get_position()
-cbar_left  = pos_left.x0
-cbar_width = pos_right.x1 - pos_left.x0
-cbar_ax = fig.add_axes([cbar_left, 0.605, cbar_width, 0.014])
-cb = plt.colorbar(rev_axes[-1][1], cax=cbar_ax, orientation="horizontal")
-cb.set_label("Inclusion fraction (0 = excluded [dark], 1 = fully included [light])", fontsize=8)
-cb.ax.tick_params(labelsize=8)
+rev_arrays = {}
+for lbl, key in (("reV Open", "open"), ("reV Reference", "reference"), ("reV Limited", "limited")):
+    with rasterio.open(REV_SOLAR[key]) as src:
+        w = from_bounds(*VIEW, transform=src.transform)
+        arr = src.read(1, window=w).astype(float)
+        if src.nodata is not None:
+            arr[arr == src.nodata] = np.nan
+        if np.nanmax(arr) > 1.5:
+            arr = arr / 100.0
+        t = src.window_transform(w)
+        r, c = arr.shape
+        rev_arrays[lbl] = dict(arr=arr, extent=(t.c, t.c + c * src.res[0], t.f - r * src.res[1], t.f))
 
 # ---------------------------------------------------------------------
-# ROW 2 — TABLES
+# FIGURE, laid out in inches from the top-left at printed size
 # ---------------------------------------------------------------------
-ax_tbl_n = fig.add_subplot(gs[1, 0])
-ax_tbl_n.axis("off")
-ax_tbl_n.set_title("Weighted sum across NLCD classes (30 m)", fontsize=10, loc="left", pad=6)
+W, H = 6.5, 6.15
+MIN_PT = 7.0
+FS = 7.5            # body / table text
+FS_HEAD = 8.5       # method headers
+INK, INK2, BLUE, GREEN_D = "#111111", "#444444", "#08519c", "#00441b"
+plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": FS,
+                     "pdf.fonttype": 42, "axes.linewidth": 0.6})
+fig = plt.figure(figsize=(W, H), facecolor="white")
+CELLS = []          # (text artist, cell rectangle in inches x, y, w, h)
 
-col_labels = ["NLCD class", "Area\n(ac)", "Solar avail.\n(0–1)", "Contribution\n(ac)"]
-cell_text  = []
-cell_colors = []
-for code, name, ac, avail, hex_col in nlcd_comp:
-    contrib = ac*avail
-    cell_text.append([f"{name}", f"{ac:.2f}", f"{avail:.2f}", f"{contrib:.2f}"])
-    cell_colors.append([hex_col, "white", "white", "white"])
-cell_text.append(["Σ  (usable area)", f"{tot_ac:.2f}", "", f"{nlcd_usable_ac:.2f}"])
-cell_colors.append(["#f0f0f0"]*4)
 
-tbl_n = ax_tbl_n.table(cellText=cell_text, colLabels=col_labels, cellColours=cell_colors,
-                       loc="center", cellLoc="center",
-                       colWidths=[0.45, 0.14, 0.18, 0.20])
-tbl_n.auto_set_font_size(False); tbl_n.set_fontsize(9)
-tbl_n.scale(1, 1.30)
-for (r,c), cell in tbl_n.get_celld().items():
-    cell.set_edgecolor("#bbb")
-    if r == 0:
-        cell.set_text_props(fontweight="bold"); cell.set_facecolor("#e6e6e6")
-    if r == len(cell_text):
-        cell.set_text_props(fontweight="bold")
-    if c == 0 and r > 0:
-        cell.set_text_props(ha="left"); cell._loc = "left"
-    # White text on dark class color for readability
-    if r > 0 and r <= len(nlcd_comp) and c == 0:
-        _, _, _, _, hex_col = nlcd_comp[r-1]
-        if hex_col in ["#ab6c28","#68ab5f","#eb0000"]:
-            cell.set_text_props(color="white", ha="left")
-tbl_n.get_celld()[(len(cell_text), 3)].set_facecolor("#c7e9c0")
-tbl_n.get_celld()[(len(cell_text), 3)].set_text_props(fontweight="bold", color="#00441b")
+def T(x, y, s, pt=FS, **kw):
+    kw.setdefault("va", "top")
+    return fig.text(x / W, 1 - y / H, s, fontsize=pt, **kw)
 
-ax_tbl_r = fig.add_subplot(gs[1, 1])
-ax_tbl_r.axis("off")
-ax_tbl_r.set_title("Coverage-weighted sum across reV composite cells (90 m)",
-                   fontsize=10, loc="left", pad=6)
 
-col_labels_r = ["Scenario", "N cells", "Mean inclusion", "Usable area (ac)"]
-cell_text_r = []
-cell_colors_r = []
-# Light→dark palette consistent with bar chart
-scenario_bg = {"reV Open":"#deebf7", "reV Reference":"#6baed6", "reV Limited":"#08519c"}
-scenario_text = {"reV Open":"black", "reV Reference":"black", "reV Limited":"white"}
-for lbl in ["reV Open","reV Reference","reV Limited"]:
-    d = PIPELINE["rev"][lbl]
-    cell_text_r.append([lbl, f"{d['n_pix']}", f"{d['mean_incl']:.3f}", f"{d['usable_ac']:.2f}"])
-    cell_colors_r.append([scenario_bg[lbl], "white", "white", "white"])
+def AX(x, y, w, h):
+    return fig.add_axes([x / W, 1 - (y + h) / H, w / W, h / H])
 
-tbl_r = ax_tbl_r.table(cellText=cell_text_r, colLabels=col_labels_r, cellColours=cell_colors_r,
-                       loc="upper center", cellLoc="center",
-                       colWidths=[0.30, 0.16, 0.24, 0.28])
-tbl_r.auto_set_font_size(False); tbl_r.set_fontsize(9)
-tbl_r.scale(1, 1.30)
-for (r,c), cell in tbl_r.get_celld().items():
-    cell.set_edgecolor("#bbb")
-    if r == 0:
-        cell.set_text_props(fontweight="bold"); cell.set_facecolor("#e6e6e6")
-    if c == 0 and r > 0:
-        lbl_r = ["reV Open","reV Reference","reV Limited"][r-1]
-        cell.set_text_props(ha="left", color=scenario_text[lbl_r]); cell._loc = "left"
-    if c == 3 and r > 0:
-        cell.set_text_props(fontweight="bold")
-        cell.set_facecolor("#c7e9c0")
 
-ax_tbl_n.text(0.02, -0.12,
-              r"$\mathrm{usable\ area} = \sum_c A_c \times f_c^{\mathrm{avail}}$",
-              transform=ax_tbl_n.transAxes, fontsize=10, color="#444")
-ax_tbl_r.text(0.02, 0.40,
-              r"$\mathrm{usable\ area} = \sum_i A_{\mathrm{pixel}} \times \mathrm{incl}_i$",
-              transform=ax_tbl_r.transAxes, fontsize=10, color="#444")
+def style_map(ax, lw=1.1):
+    ax.set_xlim(VIEW[0], VIEW[2]); ax.set_ylim(VIEW[1], VIEW[3])
+    ax.set_xticks([]); ax.set_yticks([]); ax.set_aspect("equal")
+    for sp in ax.spines.values():
+        sp.set_edgecolor("#888"); sp.set_linewidth(0.5)
+    ax.plot(OUTLINE[:, 0], OUTLINE[:, 1], color="black", lw=lw)
 
-# ---------------------------------------------------------------------
-# ROW 3 — COMPARISON BAR (Open=light → Limited=dark)
-# ---------------------------------------------------------------------
-ax_cmp = fig.add_subplot(gs[2, :])
+
+def table(x0, y0, widths, header, rows, row_h=0.165, head_h=0.30, fills=None, bold_rows=(),
+          align=None, swatches=None):
+    """Draw a table with explicit cells. Returns the bottom y (inches)."""
+    align = align or ["left"] + ["right"] * (len(widths) - 1)
+    xs = np.concatenate([[x0], x0 + np.cumsum(widths)])
+    pad = 0.05
+
+    def cell(ci, y, h, s, fc, bold=False, color=INK, swatch=None):
+        fig.add_artist(Rectangle((xs[ci] / W, 1 - (y + h) / H), widths[ci] / W, h / H,
+                                 facecolor=fc, edgecolor="#bbbbbb", lw=0.5))
+        tx = xs[ci] + pad
+        if swatch:
+            fig.add_artist(Rectangle(((xs[ci] + pad) / W, 1 - (y + h / 2 + 0.045) / H), 0.11 / W, 0.09 / H,
+                                     facecolor=swatch, edgecolor="#666", lw=0.4))
+            tx += 0.16
+        if align[ci] == "right":
+            tx, ha = xs[ci + 1] - pad, "right"
+        elif align[ci] == "center":
+            tx, ha = (xs[ci] + xs[ci + 1]) / 2, "center"
+        else:
+            ha = "left"
+        t = T(tx, y + h / 2, s, FS, ha=ha, va="center", fontweight="bold" if bold else "normal",
+              color=color, linespacing=1.05)
+        CELLS.append((t, (xs[ci], y, widths[ci], h)))
+
+    for ci, s in enumerate(header):
+        cell(ci, y0, head_h, s, "#e6e6e6", bold=True)
+    y = y0 + head_h
+    for ri, row in enumerate(rows):
+        for ci, s in enumerate(row):
+            fc = fills[ri][ci] if fills else "white"
+            sw = swatches[ri] if (swatches and ci == 0) else None
+            cell(ci, y, row_h, s, fc, bold=ri in bold_rows or (fc == "#c7e9c0"),
+                 color=GREEN_D if fc == "#c7e9c0" else INK, swatch=sw)
+        y += row_h
+    return y
+
+
+LX, RX, COLW = 0.04, 3.36, 3.10          # left / right column origin and width
+
+T(W / 2, 0.02, f"Exemplar parcel: Darke County, Ohio, {GROSS_AC:.1f} ac", 9.0, ha="center",
+  fontweight="bold", color=INK)
+T(LX + COLW / 2, 0.27, "NLCD land-cover-proportion method", FS_HEAD, ha="center", fontweight="bold", color=BLUE)
+T(RX + COLW / 2, 0.27, "reV composite-exclusion method", FS_HEAD, ha="center", fontweight="bold", color=BLUE)
+fig.add_artist(plt.Line2D([(RX - 0.13) / W] * 2, [1 - 0.27 / H, 1 - 4.05 / H], color="#d0d0d0", lw=0.8))
+
+# ---- Row 1, left: NLCD map + class legend
+MAP_Y = 0.70
+NMAP_H = 1.72
+nmap_w = NMAP_H * ASPECT
+T(LX, 0.52, "NLCD 2021 land cover (30 m)", FS, color=INK2)
+ax_n = AX(LX, MAP_Y, nmap_w, NMAP_H)
+ext = (VIEW[0], VIEW[2], VIEW[1], VIEW[3])
+ax_n.imshow(nlcd_img, extent=ext, interpolation="nearest", alpha=0.20)
+im_n = ax_n.imshow(nlcd_img, extent=ext, interpolation="nearest")
+clip = PathPatch(MplPath(OUTLINE), transform=ax_n.transData, facecolor="none", lw=0)
+ax_n.add_patch(clip); im_n.set_clip_path(clip)
+style_map(ax_n)
+lgx = LX + nmap_w + 0.14
+T(lgx, MAP_Y, "Classes in parcel", FS, fontweight="bold", color=INK)
+for i, (_, nm, _, _, hx) in enumerate(NLCD_COMP):
+    yy = MAP_Y + 0.25 + i * 0.205
+    fig.add_artist(Rectangle((lgx / W, 1 - (yy + 0.12) / H), 0.13 / W, 0.11 / H, facecolor=hx, edgecolor="#666", lw=0.4))
+    T(lgx + 0.19, yy + 0.065, nm, FS, va="center", color=INK)
+
+# ---- Row 1, right: three reV maps + colorbar
+cmap_rev = LinearSegmentedColormap.from_list("rev_incl", ["#08306b", "#4292c6", "#c6dbef", "#f7f7f7"])
+GAP = 0.10
+cw = (COLW - 2 * GAP) / 3
+rmap_h = cw / ASPECT
+for k, (lbl, d) in enumerate(rev_arrays.items()):
+    x = RX + k * (cw + GAP)
+    T(x + cw / 2, 0.52, lbl, FS, ha="center", color=INK2)
+    ax = AX(x, MAP_Y, cw, rmap_h)
+    im_r = ax.imshow(d["arr"], extent=d["extent"], cmap=cmap_rev, vmin=0, vmax=1, interpolation="nearest")
+    style_map(ax, lw=0.9)
+CB_Y = MAP_Y + rmap_h + 0.16
+cax = AX(RX + 0.12, CB_Y, COLW - 0.24, 0.08)
+cb = fig.colorbar(im_r, cax=cax, orientation="horizontal")
+cb.set_ticks([0, 0.25, 0.5, 0.75, 1.0])
+cb.ax.tick_params(labelsize=FS, length=2, width=0.5, pad=1.5)
+cb.outline.set_linewidth(0.5)
+T(RX + COLW / 2, CB_Y + 0.30, "Inclusion fraction (0 = excluded, dark;\n1 = fully included, light)",
+  FS, ha="center", color=INK2, linespacing=1.15)
+
+# ---- Row 2: tables
+TB_Y = 2.55
+T(LX, TB_Y, "Weighted sum across NLCD classes (30 m)", FS, fontweight="bold", color=INK)
+rows_n = [[nm, f"{ac:.2f}", f"{av:.2f}", f"{ac * av:.2f}"] for _, nm, ac, av, _ in NLCD_COMP]
+rows_n.append(["Total (usable area)", f"{TOT_AC:.2f}", "", f"{NLCD_USABLE_AC:.2f}"])
+fills_n = [["white"] * 4 for _ in NLCD_COMP] + [["#f0f0f0", "#f0f0f0", "#f0f0f0", "#c7e9c0"]]
+yb_n = table(LX, TB_Y + 0.20, [1.50, 0.46, 0.50, 0.64],
+             ["NLCD class", "Area\n(ac)", "Solar\navail.", "Contrib.\n(ac)"],
+             rows_n, fills=fills_n, bold_rows=(len(rows_n) - 1,),
+             swatches=[c[4] for c in NLCD_COMP] + [None])
+T(LX, yb_n + 0.08, "Usable area = \u03a3 over classes (class area \u00d7 solar availability)", FS, color=INK2)
+
+T(RX, TB_Y, "Coverage-weighted sum across reV cells (90 m)", FS, fontweight="bold", color=INK)
+scen_bg = {"reV Open": "#deebf7", "reV Reference": "#6baed6", "reV Limited": "#08519c"}
+rows_r = [[lbl, f"{d['n']}", f"{d['mean']:.3f}", f"{d['usable']:.2f}"] for lbl, d in REV_STATS.items()]
+fills_r = [[scen_bg[lbl], "white", "white", "#c7e9c0"] for lbl in REV_STATS]
+yb_r = table(RX, TB_Y + 0.20, [1.02, 0.56, 0.74, 0.78],
+             ["Scenario", "Cells\n(n)", "Mean\ninclusion", "Usable\narea (ac)"], rows_r, fills=fills_r)
+for t, (cx, cy, cwid, ch) in CELLS:     # white text on the dark Limited fill
+    if t.get_text() == "reV Limited":
+        t.set_color("white")
+T(RX, yb_r + 0.08, "Usable area = \u03a3 over cells (cell area \u00d7 inclusion fraction)", FS, color=INK2)
+T(RX, yb_r + 0.34, "Cells: 90 m cells whose centres fall inside the parcel.\n"
+  "Equivalently, mean inclusion \u00d7 parcel area.", FS, color=INK2, linespacing=1.15)
+
+# ---- Row 3: comparison bar
+BAR_Y = 4.75
+T(LX, BAR_Y, "Method outputs for this parcel (solar)", FS, fontweight="bold", color=INK)
+ax_c = AX(1.02, BAR_Y + 0.22, W - 1.02 - 0.30, 0.86)
 methods = ["NLCD", "reV Open", "reV Reference", "reV Limited"]
-values  = [PIPELINE["nlcd_usable_ac"],
-           PIPELINE["rev"]["reV Open"]["usable_ac"],
-           PIPELINE["rev"]["reV Reference"]["usable_ac"],
-           PIPELINE["rev"]["reV Limited"]["usable_ac"]]
-# Open→Limited = light→dark, matching table & colorbar semantics
-colors  = ["#2ca25f", "#deebf7", "#6baed6", "#08519c"]
-edge_colors = ["#00441b", "#08519c", "#08519c", "#08519c"]
-
-bars = ax_cmp.barh(np.arange(4), values, color=colors, edgecolor=edge_colors, linewidth=1.2)
+values = [NLCD_USABLE_AC] + [REV_USABLE_AC[m] for m in methods[1:]]
+colors = ["#2ca25f", "#deebf7", "#6baed6", "#08519c"]
+edges = ["#00441b", "#08519c", "#08519c", "#08519c"]
+ax_c.barh(np.arange(4), values, color=colors, edgecolor=edges, linewidth=0.7, height=0.66)
 for i, v in enumerate(values):
-    ax_cmp.text(v+1, i, f"{v:.2f} ac", va="center", fontsize=10, fontweight="bold")
-ax_cmp.set_yticks(np.arange(4))
-ax_cmp.set_yticklabels(methods, fontsize=10)
-ax_cmp.invert_yaxis()
-ax_cmp.set_xlim(0, max(values)*1.12)
-ax_cmp.set_xlabel("Usable area estimate (ac) — solar", fontsize=10)
-ax_cmp.set_title(f"Method outputs for this parcel (parcel gross area = {PIPELINE['parcel_gross_ac']:.1f} ac)",
-                 fontsize=10, loc="left")
-ax_cmp.spines[["top","right"]].set_visible(False)
-ax_cmp.tick_params(axis="x", labelsize=9)
-ax_cmp.axvline(PIPELINE['parcel_gross_ac'], color="#888", linestyle="--", linewidth=1)
-ax_cmp.text(PIPELINE['parcel_gross_ac']+0.5, -0.55, f"parcel gross = {PIPELINE['parcel_gross_ac']:.1f} ac",
-            fontsize=8, color="#666", va="bottom")
+    ax_c.text(v + 1.0, i, f"{v:.2f} ac", va="center", fontsize=FS, fontweight="bold", color=INK)
+ax_c.set_yticks(np.arange(4)); ax_c.set_yticklabels(methods, fontsize=FS)
+ax_c.invert_yaxis()
+ax_c.set_xlim(0, 100)
+ax_c.set_xlabel("Usable area estimate (ac)", fontsize=FS, labelpad=2)
+ax_c.tick_params(axis="both", labelsize=FS, length=2, width=0.5, pad=2)
+ax_c.spines[["top", "right"]].set_visible(False)
+ax_c.axvline(GROSS_AC, color="#888", linestyle="--", linewidth=0.8)
+ax_c.text(GROSS_AC + 1.0, 3.25, f"parcel gross\n{GROSS_AC:.1f} ac", fontsize=FS, color="#555", va="center",
+          linespacing=1.1)
 
-plt.savefig(OUT, dpi=180, bbox_inches="tight", facecolor="white")
-plt.savefig(OUT.replace(".png", ".pdf"), bbox_inches="tight", facecolor="white")
-print(f"Saved {OUT}")
+# ---------------------------------------------------------------------
+# Checks (no mathtext is used, so no sub-/superscripts below the floor): font floor, in-bounds, no overlaps, table labels inside cells
+# ---------------------------------------------------------------------
+fig.canvas.draw()
+rend = fig.canvas.get_renderer()
+to_px = fig.dpi
+allt = [t for t in fig.findobj(matplotlib.text.Text) if t.get_text().strip() and t.get_visible()]
+problems = [f"font {t.get_fontsize()} pt < {MIN_PT}: {t.get_text()!r}" for t in allt if t.get_fontsize() < MIN_PT - 1e-6]
+fb = fig.bbox
+boxes = [(t, t.get_window_extent(rend)) for t in allt]
+for t, bb in boxes:
+    if bb.x0 < fb.x0 or bb.x1 > fb.x1 or bb.y0 < fb.y0 or bb.y1 > fb.y1:
+        problems.append(f"out of figure: {t.get_text()!r}")
+for i in range(len(boxes)):
+    for j in range(i + 1, len(boxes)):
+        a, c = boxes[i][1], boxes[j][1]
+        if min(a.x1, c.x1) - max(a.x0, c.x0) > 0.5 and min(a.y1, c.y1) - max(a.y0, c.y0) > 0.5:
+            problems.append(f"overlap: {boxes[i][0].get_text()!r} / {boxes[j][0].get_text()!r}")
+PAD_IN = 0.02
+for t, (cx, cy, cwid, ch) in CELLS:
+    bb = t.get_window_extent(rend)
+    x0, x1 = (cx + PAD_IN) * to_px, (cx + cwid - PAD_IN) * to_px
+    y1, y0 = (H - cy - PAD_IN) * to_px, (H - cy - ch + PAD_IN) * to_px
+    if bb.x0 < x0 or bb.x1 > x1 or bb.y0 < y0 or bb.y1 > y1:
+        problems.append(f"label outside its cell: {t.get_text()!r}")
+map_axes = [a for a in fig.axes if a is not cax and a is not ax_c]
+for a in map_axes:
+    ab = a.get_window_extent(rend)
+    for t, bb in boxes:
+        if t.axes is None and min(bb.x1, ab.x1) - max(bb.x0, ab.x0) > 0.5 and min(bb.y1, ab.y1) - max(bb.y0, ab.y0) > 0.5:
+            problems.append(f"text on map: {t.get_text()!r}")
+print("\n".join(problems) if problems else
+      f"layout check: OK ({len(allt)} labels, {len(CELLS)} table cells, min font {min(t.get_fontsize() for t in allt)} pt)")
+for lbl, d in REV_STATS.items():
+    print(f"  {lbl}: n={d['n']} mean={d['mean']:.4f} usable={d['usable']:.4f}")
+print(f"  NLCD: total {TOT_AC:.4f} ac, usable {NLCD_USABLE_AC:.4f} ac; gross {GROSS_AC:.4f} ac")
+
+fig.savefig(OUT, dpi=300, facecolor="white")
+fig.savefig(OUT.with_suffix(".pdf"), facecolor="white")
+print(f"Saved {OUT} and .pdf ({W} x {H} in)")
+_sys.exit(1 if problems else 0)

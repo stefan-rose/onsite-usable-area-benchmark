@@ -96,8 +96,9 @@ This document lists every pipeline script in run order, its inputs, and its outp
 
 ### `build_fig1_conceptual.py`
 - **Purpose.** Figure 1: side-by-side methods-conceptual figure on the Ohio exemplar parcel.
-- **Inputs.** Ohio exemplar parcel (M-FIND v1.1 obs_id `ku4emmcinr`, Holmes County), read from the script `01` parcel universe through the local facility site list; three reV solar composite rasters; NLCD 2021 land cover from the MRLC WMS (needs network access).
-- **Outputs.** `figures/fig3_conceptual_ohio.png` and `.pdf` (the downloaded NLCD WMS tile is cached in `intermediate/fig1_conceptual/`). The file name keeps its earlier `fig3` prefix because the manuscript source includes it under that name.
+- **Inputs.** Ohio exemplar parcel (M-FIND v1.1 obs_id `2n60pgp73g`, Darke County, 78.8 ac). Its boundary is the open OGRIP Ohio Statewide Parcels record in `data/exemplar_parcel/`, so no licensed geometry is needed. Also three reV solar composite rasters and NLCD 2021 land cover from the MRLC WMS (network access on first run). Per-class NLCD acres and usable areas are the pipeline values (release v1.0); the reV values are re-derived from the rasters and asserted.
+- **Checks.** The figure is drawn at its printed size (6.5 in). The script exits non-zero if any font is below 7 pt, any label overlaps another or leaves the figure, or any table label leaves its cell.
+- **Outputs.** `figures/fig3_conceptual_ohio.png` and `.pdf` (the downloaded NLCD WMS tile is cached in `intermediate/fig1_conceptual/`; set `FIG1_REFRESH=1` to fetch it again). The file name keeps its earlier `fig3` prefix because the manuscript source includes it under that name.
 - **Run.** `pixi run fig1-conceptual`.
 
 ### `render_vegalite.py`
