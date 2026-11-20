@@ -96,7 +96,7 @@ This document lists every pipeline script in run order, its inputs, and its outp
 
 ### `build_fig1_conceptual.py`
 - **Purpose.** Figure 1: side-by-side methods-conceptual figure on the Ohio exemplar parcel.
-- **Inputs.** Ohio exemplar parcel (`PARCEL_LID` 02045A7E94BIP8PKTU7I4T), read from the script `01` parcel universe; three reV solar composite rasters; NLCD 2021 land cover from the MRLC WMS (needs network access).
+- **Inputs.** Ohio exemplar parcel (M-FIND v1.1 obs_id `ku4emmcinr`, Holmes County), read from the script `01` parcel universe through the local facility site list; three reV solar composite rasters; NLCD 2021 land cover from the MRLC WMS (needs network access).
 - **Outputs.** `figures/fig3_conceptual_ohio.png` and `.pdf` (the downloaded NLCD WMS tile is cached in `intermediate/fig1_conceptual/`). The file name keeps its earlier `fig3` prefix because the manuscript source includes it under that name.
 - **Run.** `pixi run fig1-conceptual`.
 

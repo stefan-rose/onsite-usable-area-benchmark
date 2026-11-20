@@ -2,7 +2,7 @@
 """
 Build Figure 1 - Conceptual comparison of NLCD land-cover-proportion
 vs reV composite-exclusion usable-area methods, using an Ohio exemplar
-parcel (PARCEL_LID 02045A7E94BIP8PKTU7I4T, 81.2 ac).
+parcel (M-FIND v1.1 obs_id ku4emmcinr, Holmes County, 81.2 ac).
 
 Run from repo root under pixi:
     pixi run fig1-conceptual
@@ -18,7 +18,9 @@ Data dependencies:
 - MRLC WMS: https://www.mrlc.gov/geoserver/mrlc_display/wms  (NLCD 2021 land cover)
 - reV composite exclusion rasters (EPSG:5070, 90 m) under Data/reV Exclusions/
 - Parcel geometry: the exemplar row of PARCELS_WORKING_GPKG
-  (parcels_conus_2026_04_23.gpkg, written by script 01)
+  (parcels_conus_2026_04_23.gpkg, written by script 01). The row is found
+  by mapping the M-FIND obs_id to its licensed parcel key through the local
+  facility site list (FACILITY_CSV), so no LightBox key is stored here.
 - The NLCD WMS image is cached under intermediate/fig1_conceptual/
 - Pipeline exact values from method_comparison output CSVs.
 """
@@ -41,20 +43,28 @@ import urllib.request, urllib.parse, os
 import sys as _sys
 from pathlib import Path as _Path
 _sys.path.insert(0, str(_Path(__file__).resolve().parent))
-from _config import FIGURES, INTERMEDIATE, PARCELS_WORKING_GPKG, REV_SOLAR  # noqa: E402
+from _config import FACILITY_CSV, FIGURES, INTERMEDIATE, PARCELS_WORKING_GPKG, REV_SOLAR  # noqa: E402
+import pandas as pd
 
 OUT = str(FIGURES / "fig3_conceptual_ohio.png")
 
-# Exemplar parcel and a scratch directory for the downloaded NLCD tile.
-# The scratch directory lives under intermediate/, which is gitignored.
-EXEMPLAR_LID = "02045A7E94BIP8PKTU7I4T"
+# Exemplar facility (M-FIND v1.1 obs_id) and a scratch directory for the
+# downloaded NLCD tile. The scratch directory lives under intermediate/,
+# which is gitignored.
+EXEMPLAR_OBS_ID = "ku4emmcinr"
 CACHE = INTERMEDIATE / "fig1_conceptual"
 CACHE.mkdir(parents=True, exist_ok=True)
 
 # --- Parcel in EPSG:5070 (same as reV) ---
-# Read only the exemplar row from the working parcel universe (script 01).
+# Map the obs_id to the parcel key with the local facility site list, then
+# read only that row from the working parcel universe (script 01).
+_sl = pd.read_csv(FACILITY_CSV, dtype=str, usecols=["PARCEL_LID", "obs_id"])
+_hit = _sl[_sl.obs_id.str.split(",").apply(
+    lambda ids: EXEMPLAR_OBS_ID in [i.strip() for i in ids] if isinstance(ids, list) else False)]
+assert _hit.PARCEL_LID.nunique() == 1, f"obs_id {EXEMPLAR_OBS_ID} maps to {_hit.PARCEL_LID.nunique()} parcels"
+_lid = _hit.PARCEL_LID.iloc[0]
 p_wgs = gpd.read_file(PARCELS_WORKING_GPKG,
-                      where=f"PARCEL_LID = '{EXEMPLAR_LID}'").to_crs(4326)
+                      where=f"PARCEL_LID = '{_lid}'").to_crs(4326)
 assert len(p_wgs) == 1, f"expected 1 exemplar parcel, found {len(p_wgs)}"
 p_5070 = p_wgs.to_crs(5070)
 b5070 = p_5070.total_bounds
