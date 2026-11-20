@@ -36,7 +36,8 @@ Blocking items:
       rewritten. Tell the M-FIND team (STATE field fix for v1.2).
 - [x] Federal layer versions and access dates in CODEBOOK provenance and DATA_SOURCES.md
       (2026-11-20, from the metadata XMLs and download logs in Data/wind_exclusions/).
-- [ ] BLOCKER (Stefan): flag_dod_sua is ALL SUA types, not "DoD restricted" as the paper
+- [x] RESOLVED 2026-11-20, option (a): paper reworded to all SUA types (32 CFR 211 rationale,
+      R/P-only sensitivity ~1.56 M ac in Sec 3). Was: flag_dod_sua is ALL SUA types, not "DoD restricted" as the paper
       says. Of 13,122 flagged parcels only 735 touch R/P; with an R/P filter the 5-layer
       wind total would be about 1.559 M ac instead of 1.309. Decide: reword the paper or
       re-run. CODEBOOK now describes the data as it is ("polygon of any type").
