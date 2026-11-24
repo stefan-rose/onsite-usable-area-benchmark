@@ -25,6 +25,7 @@ Each manuscript figure and table is produced by (or aggregated from) specific sc
 | 1 | Methods conceptual figure on the Ohio exemplar parcel | `scripts/build_fig1_conceptual.py` (`pixi run fig1-conceptual`) | Writes `fig3_conceptual_ohio.{png,pdf}`; the file name is kept because the manuscript source includes it under that name. |
 | 2 | National headline usable-area totals: reV envelope and NLCD points, log scale, solar and wind | Data: `scripts/13_build_manuscript_figure_data.py` → `figures/data/fig_headline_totals.csv`. Spec: `figures/fig_headline_usable_area.vl.json` | Same values as Table 2. Diagnostic rows (reV Parcel Joined, NLCD 7-layer wind) are not plotted. Values are inlined in the spec by layer. |
 | 3 | Usable area by parcel size bin, solar and wind | Data: `scripts/13_build_manuscript_figure_data.py` → `figures/data/fig_bins.csv`. Spec: `figures/fig_bins.vl.json` | Same values as Table 3. Bar totals equal Table 2. |
+| GA | Graphical abstract: parcels in context → NLCD vs reV on the exemplar → national usable area bars | `scripts/build_graphical_abstract_v2.py` (`PROJ_NETWORK=OFF pixi run -q python scripts/build_graphical_abstract_v2.py`) | Writes `figures/graphical_abstract_v2.{png,pdf}` at 13 × 5.2 cm. National totals are hard-coded and asserted against the abstract ratios (same values as Table 2). Panel 1 uses open OGRIP parcels, `data/exemplar_parcel/ogrip_darke_neighbors.geojson`. Script exits non-zero if text, bars, maps or arrows overlap. |
 
 Figures 2 and 3 are rendered to vector PDF at print size with
 
